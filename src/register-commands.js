@@ -1,5 +1,3 @@
-require('dotenv').config()
-
 const { REST, Routes, ApplicationCommandOptionType } = require('discord.js')
 
 const commands = [
@@ -8,12 +6,13 @@ const commands = [
         description: 'the bot greets you'
     },
     {
-        name: 'find',
-        description: 'check if the player exists',
+        name: 'indog',
+        description: 'player commands',
         options: [
+            // search 1 player
             {
                 type: ApplicationCommandOptionType.Subcommand,
-                name: 'player',
+                name: 'search',
                 description: 'check if the player exists',
                 options: [
                     {
@@ -21,6 +20,59 @@ const commands = [
                         name: 'username',
                         description: 'player ingame name',
                         required: true
+                    }
+                ]
+            },
+            // insert new player
+            {
+                type: ApplicationCommandOptionType.Subcommand,
+                name: 'insert',
+                description: 'insert new player',
+                options: [
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'username',
+                        description: 'player ingame name',
+                        required: true
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'alias',
+                        description: 'nama awiwi 😳'
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'region',
+                        description: 'tempat niggal 😎'
+                    }
+                ]
+            },
+            // edit player info
+            {
+                type: ApplicationCommandOptionType.Subcommand,
+                name: 'edit',
+                description: 'edit player ingfo',
+                options: [
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'username',
+                        description: 'player ingame name',
+                        required: true
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'alias',
+                        description: 'nama awiwi 😳'
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'region',
+                        description: 'tempat niggal 😎'
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'new_username',
+                        description: 'ganti ingame name'
                     }
                 ]
             }
