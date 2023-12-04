@@ -9,6 +9,12 @@ const commands = [
         name: 'indog',
         description: 'player commands',
         options: [
+            // get all player
+            {
+                type: ApplicationCommandOptionType.Subcommand,
+                name: 'all_players',
+                description: 'get all player ingfo'
+            },
             // search 1 player
             {
                 type: ApplicationCommandOptionType.Subcommand,
@@ -44,6 +50,11 @@ const commands = [
                         type: ApplicationCommandOptionType.String,
                         name: 'region',
                         description: 'tempat niggal 😎'
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'status',
+                        description: 'ke-aktifan player di rotmeg'
                     }
                 ]
             },
@@ -68,6 +79,11 @@ const commands = [
                         type: ApplicationCommandOptionType.String,
                         name: 'region',
                         description: 'tempat niggal 😎'
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'status',
+                        description: 'ke-aktifan player di rotmeg'
                     },
                     {
                         type: ApplicationCommandOptionType.String,

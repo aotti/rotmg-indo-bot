@@ -1,10 +1,22 @@
 const supabase = require('../database/database')
 
+function selectAll(query) {
+    if(supabase == null)
+    return console.log('cannot connect to database');
+    // get all data from supabase
+    const selectAllDataFromDB = async () => {
+        const {data, error} = await supabase.from(query.table)
+                            .select(query.selectColumn)
+                            .order('id', {ascending: true})
+        return {data: data, error: error}
+    }
+    return selectAllDataFromDB()
+}
+
 function selectOne(query) {
-    // find username in database
     if(supabase == null)
         return console.log('cannot connect to database');
-    // get data from supabase
+    // get one data from supabase
     const selectOneDataFromDB = async () => {
         const {data, error} = await supabase.from(query.table)
                             .select(query.selectColumn)
@@ -18,7 +30,7 @@ function insertDataRow(query) {
     if(supabase == null)
         return console.log('cannot connect to database');
     const insertDataToDB = async () => {
-        // insert player data who joined the game
+        // insert player data 
         const {data, error} = await supabase.from(query.table)
                             // [] means insert multiple values 
                             .insert([query.insertColumn])
@@ -42,6 +54,7 @@ function updateData(query) {
 }
 
 module.exports = {
+    selectAll,
     selectOne,
     insertDataRow,
     updateData
