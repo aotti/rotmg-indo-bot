@@ -1,5 +1,6 @@
 const { selectOne, insertDataRow, updateData, selectAll } = require('../database/databaseQueries')
 const { EmbedBuilder } = require('discord.js')
+const { pagination, ButtonTypes, ButtonStyles } = require('@devraelfreeze/discordjs-pagination');
 
 function setReplyContent(type, data) {
     if(type === 'not found') {
@@ -90,7 +91,7 @@ function filterObjectValues(obj) {
     return tempObj
 }
 
-function resultHandler(interact, result, username = null) {
+function resultHandler(interact, result, userlookup = null) {
     // if result error
     if(result.error !== null) {
         interact.reply(JSON.stringify(result.error))
@@ -99,7 +100,7 @@ function resultHandler(interact, result, username = null) {
     // if result success but data not found
     else if(result.data.length === 0) {
         // set reply message
-        const replyContent = setReplyContent('not found', {username: username})
+        const replyContent = setReplyContent('not found', {username: userlookup})
         interact.reply({ content: replyContent, ephemeral: true })
         return true
     }
@@ -141,38 +142,79 @@ function replyMessage(interact) {
                         const query = queryBuilder('players', 14)
                         resolve(selectAll(query))
                     })
-                    .then(result => {
+                    .then(async result => {
                         // check if the result is error / not found
                         if(resultHandler(interact, result)) return
                         const playersObj = {}
                         const playersArr = []
                         // input all username to array
                         for(let i in result.data) {
-                            playersArr.push(`${+i+1}. ${result.data[i].username} - ${result.data[i].status}`)
+                            playersArr.push(`${+i+1}. ${result.data[i].username} [${result.data[i].status}]`)
                         }
                         // slice materials
-                        const sliceAmount = 2
+                        const sliceAmount = 5
                         let sliceStart = 0
-                        let sliceEnd = Math.ceil(playersArr.length / sliceAmount)
+                        let sliceEnd = 5
+                        const sliceLoops = Math.ceil(playersArr.length / sliceAmount)
                         // slice array into few parts
-                        for(let i=0; i<sliceAmount; i++) {
+                        for(let i=0; i<sliceLoops; i++) {
                             // slice the array
                             const slicedArray = playersArr.slice(sliceStart, sliceEnd)
                             // insert into object 
-                            playersObj[`page${i+1}`] = slicedArray
+                            playersObj[`col_${i+1}`] = slicedArray
                             // update sliceStart and sliceEnd for different object page
                             sliceStart = sliceEnd
-                            sliceEnd = sliceEnd * 2
+                            sliceEnd = sliceEnd + sliceAmount
                         }
-                        // create embed content
-                        const embedContent = new EmbedBuilder()
-                            .setTitle('Indog Player List')
-                            .setDescription('daftar player rotmeg indonesia')
-                        for(let [title, value] of Object.entries(playersObj)) {
-                            embedContent.addFields({ name: title, value: value.join('\n'), inline: true })
+                        // embed content materials
+                        let embedCounter = 0
+                        const embedPages = Math.ceil(playersArr.length / 15)
+                        const embedFields = 3
+                        const embedArray = []
+                        // create embed (3x loops = 3 embeds)
+                        for(let i=0; i<embedPages; i++) {
+                            const embedContent = new EmbedBuilder()
+                                .setTitle('Indog Player List')
+                                .setDescription(`jumlah player: ${playersArr.length}`)
+                            // create fields (2x loops = 2 pages)
+                            // embedpages-1 to make 2 pages per embed
+                            for(let j=0; j<embedFields; j++) {
+                                const fieldValue = Object.values(playersObj)
+                                embedContent.addFields({ 
+                                    // set title every multiple of 2
+                                    name: embedCounter % embedFields === 0 ? `Username [status]` : '** **', 
+                                    value: fieldValue[embedCounter] != null ? fieldValue[embedCounter].join('\n') : '** **', 
+                                    inline: true 
+                                })
+                                // increment for field titles
+                                embedCounter++
+                            }
+                            // input each embed to array for pagination
+                            embedArray.push(embedContent)
                         }
-                        // send reply message
-                        interact.reply({ embeds: [embedContent], ephemeral: true })
+                        // send reply message with pagination
+                        await pagination({
+                            embeds: embedArray, /** Array of embeds objects */
+                            author: interact.member.user,
+                            interaction: interact,
+                            ephemeral: true,
+                            time: 400000, /** 400 seconds */
+                            disableButtons: false, /** Remove buttons after timeout */
+                            fastSkip: false,
+                            pageTravel: false,
+                            buttons: [
+                                {
+                                    type: ButtonTypes.previous,
+                                    label: 'Back',
+                                    style: ButtonStyles.Primary
+                                },
+                                {
+                                    type: ButtonTypes.next,
+                                    label: 'Next',
+                                    style: ButtonStyles.Success
+                                }
+                            ]
+                        })
                     })
                     break
                 case 'insert':
@@ -193,23 +235,15 @@ function replyMessage(interact) {
                         // start insert data
                         new Promise(resolve => {
                             // insert player query
-                            const insertObj = {
-                                username: inputs.username,
-                                alias: inputs.alias || null,
-                                region: inputs.region || null,
-                                status: inputs.status || null
-                            }
                             const query = queryBuilder(
                                 'players', 1234, null, null, 
-                                { type: 'insert', obj: insertObj }
+                                { type: 'insert', obj: filterObjectValues(inputs) }
                             );
                             resolve(insertDataRow(query))
                         })
                         .then(result => {
-                            // INSERT UNIQUE USERNAME ERROR HANDLING
-                            if(result.error !== null) {
-                                return interact.reply(JSON.stringify(result.error))
-                            }
+                            // check if the result is error / not found
+                            if(resultHandler(interact, result)) return
                             // send reply after success insert data
                             const replyContent = setReplyContent('insert', result.data[0])
                             interact.reply({ content: replyContent, ephemeral: true })
@@ -234,9 +268,15 @@ function replyMessage(interact) {
                         // start update data
                         new Promise(resolve => {
                             // update player query
+                            const updateObj = {
+                                username: inputs.new_username || inputs.username,
+                                alias: inputs.alias,
+                                region: inputs.region,
+                                status: inputs.status
+                            }
                             const query = queryBuilder(
                                 'players', 1234, 'username', inputs.username,
-                                { type: 'update', obj: filterObjectValues(inputs) }
+                                { type: 'update', obj: filterObjectValues(updateObj) }
                             )
                             resolve(updateData(query))
                         })
