@@ -13,7 +13,7 @@ const commands = [
             {
                 type: ApplicationCommandOptionType.Subcommand,
                 name: 'all_players',
-                description: 'get all player ingfo'
+                description: 'get all player ingfo (takes 1-2 minutes, more if your internet sux)'
             },
             // search 1 player
             {
@@ -50,11 +50,6 @@ const commands = [
                         type: ApplicationCommandOptionType.String,
                         name: 'region',
                         description: 'tempat niggal 😎'
-                    },
-                    {
-                        type: ApplicationCommandOptionType.String,
-                        name: 'status',
-                        description: 'ke-aktifan player di rotmeg'
                     }
                 ]
             },
@@ -82,15 +77,16 @@ const commands = [
                     },
                     {
                         type: ApplicationCommandOptionType.String,
-                        name: 'status',
-                        description: 'ke-aktifan player di rotmeg'
-                    },
-                    {
-                        type: ApplicationCommandOptionType.String,
                         name: 'new_username',
                         description: 'ganti ingame name'
                     }
                 ]
+            },
+            // mabar video
+            {
+                type: ApplicationCommandOptionType.Subcommand,
+                name: 'mabar_video',
+                description: 'indog rotmeg mabar videos'
             }
         ]
     }

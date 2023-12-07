@@ -1,6 +1,7 @@
 const { selectOne, insertDataRow, updateData, selectAll } = require('../database/databaseQueries')
 const { EmbedBuilder } = require('discord.js')
 const { pagination, ButtonTypes, ButtonStyles } = require('@devraelfreeze/discordjs-pagination');
+const { fetcher } = require('./fetcher');
 
 function setReplyContent(type, data) {
     if(type === 'not found') {
@@ -18,6 +19,10 @@ function setReplyContent(type, data) {
         "`username :` " + data.username + "\n" +
         "`alias    :` " + data.alias + "\n" +
         "`region   :` " + data.region + "\n" +
+        "`rank     :` " + data.rank + "\n" +
+        "`guild    :` " + data.guild + "\n" +
+        "`created  :` " + data.created + "\n" +
+        "`last seen:` " + data.lastSeen + "\n" +
         "`status   :` " + data.status
         return contentBody
     }
@@ -28,8 +33,7 @@ function setReplyContent(type, data) {
         "~~                                               ~~\n" + 
         "`username :` " + data.username + "\n" +
         "`alias    :` " + data.alias + "\n" +
-        "`region   :` " + data.region + "\n" +
-        "`status   :` " + data.status
+        "`region   :` " + data.region
         return contentBody
     }
 }
@@ -50,7 +54,6 @@ function queryBuilder(table, selectColumn, whereColumn = null, whereValue = null
             case 1: choosenColumns.push('username'); break
             case 2: choosenColumns.push('alias'); break
             case 3: choosenColumns.push('region'); break
-            case 4: choosenColumns.push('status'); break
         }
     }
     qb.selectColumn = choosenColumns.join(', ')
@@ -124,16 +127,27 @@ function replyMessage(interact) {
                     // start search in database
                     new Promise(resolve => {
                         // find player query
-                        const query = queryBuilder('players', 1234, 'username', inputUsername)
+                        const query = queryBuilder('players', 123, 'username', inputUsername)
                         resolve(selectOne(query))
                     })
-                    .then(result => {
+                    .then(async result => {
                         // check if the result is error / not found
                         if(resultHandler(interact, result, inputUsername)) return
-                        // set reply message
-                        const replyContent = setReplyContent('found', result.data[0])
+                        // waiting reply 
+                        interact.deferReply({ ephemeral: true })
+                        // get realmeye api https://realmeye-api.glitch.me/player/[Player_Name]
+                        const getRealmAPI = await fetcher(`https://realmeye-api.glitch.me/player/${result.data[0].username}`)
+                        // merge data from db AND realm api
+                        const replyObj = {
+                            // data from api
+                            ...getRealmAPI,
+                            // data from db
+                            ...result.data[0]
+                        }
+                        // set reply content
+                        const replyContent = setReplyContent('found', replyObj)
                         // send reply message
-                        interact.reply({ content: replyContent, ephemeral: true })
+                        interact.followUp({ content: replyContent, ephemeral: true })
                     })
                     break
                 case 'all_players':
@@ -145,12 +159,18 @@ function replyMessage(interact) {
                     .then(async result => {
                         // check if the result is error / not found
                         if(resultHandler(interact, result)) return
+                        interact.deferReply({ ephemeral: true })
+                        // players container
                         const playersObj = {}
                         const playersArr = []
                         // input all username to array
                         for(let i in result.data) {
-                            playersArr.push(`${+i+1}. ${result.data[i].username} [${result.data[i].status}]`)
+                            // get realmeye api https://realmeye-api.glitch.me/player/[Player_Name]
+                            const getRealmAPI = await fetcher(`https://realmeye-api.glitch.me/player/${result.data[i].username}`, false)
+                            playersArr.push(`${+i+1}. [${getRealmAPI.status}] ${result.data[i].username}`)
                         }
+                        // get all active players
+                        const activePlayers = playersArr.map(v => { return v.match('aktif') }).filter(i => i).length
                         // slice materials
                         const sliceAmount = 5
                         let sliceStart = 0
@@ -175,7 +195,7 @@ function replyMessage(interact) {
                         for(let i=0; i<embedPages; i++) {
                             const embedContent = new EmbedBuilder()
                                 .setTitle('Indog Player List')
-                                .setDescription(`jumlah player: ${playersArr.length}`)
+                                .setDescription(`total: ${playersArr.length} | aktif: ${activePlayers}`)
                             // create fields (2x loops = 2 pages)
                             // embedpages-1 to make 2 pages per embed
                             for(let j=0; j<embedFields; j++) {
@@ -229,14 +249,13 @@ function replyMessage(interact) {
                         const inputs = {
                             username: interact.options.get('username').value.toLowerCase(),
                             alias: interact.options.get('alias')?.value.toLowerCase(),
-                            region: interact.options.get('region')?.value.toLowerCase(),
-                            status: interact.options.get('status')?.value.toLowerCase()
+                            region: interact.options.get('region')?.value.toLowerCase()
                         }
                         // start insert data
                         new Promise(resolve => {
                             // insert player query
                             const query = queryBuilder(
-                                'players', 1234, null, null, 
+                                'players', 123, null, null, 
                                 { type: 'insert', obj: filterObjectValues(inputs) }
                             );
                             resolve(insertDataRow(query))
@@ -262,7 +281,6 @@ function replyMessage(interact) {
                             username: interact.options.get('username').value.toLowerCase(),
                             alias: interact.options.get('alias')?.value.toLowerCase(),
                             region: interact.options.get('region')?.value.toLowerCase(),
-                            status: interact.options.get('status')?.value.toLowerCase(),
                             new_username: interact.options.get('new_username')?.value.toLowerCase()
                         }
                         // start update data
@@ -271,11 +289,10 @@ function replyMessage(interact) {
                             const updateObj = {
                                 username: inputs.new_username || inputs.username,
                                 alias: inputs.alias,
-                                region: inputs.region,
-                                status: inputs.status
+                                region: inputs.region
                             }
                             const query = queryBuilder(
-                                'players', 1234, 'username', inputs.username,
+                                'players', 123, 'username', inputs.username,
                                 { type: 'update', obj: filterObjectValues(updateObj) }
                             )
                             resolve(updateData(query))
@@ -288,6 +305,60 @@ function replyMessage(interact) {
                             interact.reply({ content: replyContent, ephemeral: true })
                         })
                     }
+                    break
+                case 'mabar_video':
+                    const videoLinks = {
+                        mabar: {
+                            oryx3: [
+                                {
+                                    discord: 'https://discord.com/channels/478542780243902464/601259330423226369/878535015686869013',
+                                    youtube: 'https://youtu.be/YwFQH8QcuaQ'
+                                },
+                                {
+                                    discord: 'https://discord.com/channels/478542780243902464/601259330423226369/887635892842418247',
+                                    youtube: 'https://youtu.be/ytaRMIK43fQ'
+                                }
+                            ]
+                        },
+                        duo: {
+                            oryx3: [
+                                {
+                                    discord: 'https://discord.com/channels/478542780243902464/601259330423226369/1163791431127814205',
+                                    youtube: 'https://www.youtube.com/watch?v=HP_65nXeNzQ'
+                                },
+                                {
+                                    discord: 'https://discord.com/channels/478542780243902464/601259330423226369/1166624066485108756',
+                                    youtube: 'https://www.youtube.com/watch?v=nU6cZDFym3E'
+                                }
+                            ],
+                            void: [
+                                {
+                                    discord: 'https://discord.com/channels/478542780243902464/601259330423226369/845845971538804746',
+                                    youtube: 'https://www.youtube.com/watch?v=M1Yqi26obxo'
+                                },
+                                {
+                                    youtube: 'https://www.youtube.com/watch?v=8CzKBn45w8g'
+                                }
+                            ]
+                        }
+                    }
+                    const mabarEmbed = new EmbedBuilder()
+                        .setTitle('Indog Mabar Recordings')
+                        .addFields({ 
+                            name: '\u2008', 
+                            value: `__Mabar__
+                            Oryx 3 ~ 𝟷𝚜𝚝 [youtube](${videoLinks.mabar.oryx3[0].youtube}) & [discord](${videoLinks.mabar.oryx3[0].discord})
+                            Oryx 3 ~ 𝟸𝚗𝚍 [youtube](${videoLinks.mabar.oryx3[1].youtube}) & [discord](${videoLinks.mabar.oryx3[1].discord})`
+                        })
+                        .addFields({ 
+                            name: '\u2008', 
+                            value: `__Duo__
+                            Oryx 3 ~ 𝟷𝚜𝚝 [youtube](${videoLinks.duo.oryx3[0].youtube}) & [discord](${videoLinks.duo.oryx3[0].discord})
+                            Oryx 3 ~ 𝟸𝚗𝚍 [youtube](${videoLinks.duo.oryx3[1].youtube}) & [discord](${videoLinks.duo.oryx3[1].discord})
+                            Void ~ 𝟷𝚜𝚝 [youtube](${videoLinks.duo.void[0].youtube}) & [discord](${videoLinks.duo.void[0].discord})
+                            Void ~ 𝟸𝚗𝚍 [youtube](${videoLinks.duo.void[1].youtube})`
+                        })
+                    interact.reply({ embeds: [mabarEmbed], ephemeral: true })
                     break
             }
             break
