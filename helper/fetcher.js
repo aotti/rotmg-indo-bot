@@ -1,6 +1,7 @@
 function fetcher(url, singleData = true) {
     return fetch(url, {
-        method: 'GET'
+        method: 'GET',
+        cache: "force-cache"
     })
     .then(data => { return data.json() })
     .then(api_result => {

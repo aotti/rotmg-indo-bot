@@ -1,5 +1,6 @@
 const { Client, IntentsBitField } = require('discord.js');
-const { replyMessage } = require('../helper/replyMessages')
+const { replyMessage } = require('./replyMessages');
+const { greetingsReminder, mabarReminder } = require('./reminder');
 require('dotenv').config()
 require('./register-commands')
 
@@ -15,6 +16,10 @@ const bot = new Client({
 // log message when bot online
 bot.on('ready', (b) => {
     console.log(`${b.user.tag} is online`);
+    // send greeting message on morning, noon, afternoon, evening 
+    greetingsReminder(bot)
+    // send mabar message once
+    mabarReminder(bot)
 })
 
 // listen to any slash command

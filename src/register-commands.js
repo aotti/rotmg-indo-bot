@@ -1,4 +1,5 @@
-const { REST, Routes, ApplicationCommandOptionType } = require('discord.js')
+const { REST, Routes, ApplicationCommandOptionType } = require('discord.js');
+const { getNext3Weeks } = require('../helper/dateChoices');
 
 const commands = [
     {
@@ -87,6 +88,80 @@ const commands = [
                 type: ApplicationCommandOptionType.Subcommand,
                 name: 'mabar_video',
                 description: 'indog rotmeg mabar videos'
+            },
+            // get all mabar schedules
+            {
+                type: ApplicationCommandOptionType.Subcommand,
+                name: 'check_mabar',
+                description: 'get all mabar schedules',
+                options: [
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'status',
+                        description: 'mabar schedule status',
+                        required: true,
+                        choices: [
+                            { name: 'pending', value: 'pending' },
+                            { name: 'done', value: 'done' }
+                        ]
+                    }
+                ]
+            },
+            // set mabar schedule
+            {
+                type: ApplicationCommandOptionType.Subcommand,
+                name: 'set_mabar',
+                description: 'set reminder for mabar rotmeg',
+                options: [
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'title',
+                        description: 'mabar title',
+                        required: true
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'date',
+                        description: 'when will the mabar occur (yyyy-mm-dd)',
+                        required: true,
+                        choices: getNext3Weeks()
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'description',
+                        description: 'additional ingfo about the mabar'
+                    }
+                ]
+            },
+            // set mabar schedule
+            {
+                type: ApplicationCommandOptionType.Subcommand,
+                name: 'edit_mabar',
+                description: 'edit mabar schedule rotmeg',
+                options: [
+                    {
+                        type: ApplicationCommandOptionType.Integer,
+                        name: 'id',
+                        description: 'mabar id',
+                        required: true
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'title',
+                        description: 'mabar title'
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'date',
+                        description: 'when will the mabar occur (yyyy-mm-dd)',
+                        choices: getNext3Weeks()
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'description',
+                        description: 'additional ingfo about the mabar'
+                    }
+                ]
             }
         ]
     }

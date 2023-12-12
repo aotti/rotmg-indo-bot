@@ -5,9 +5,16 @@ function selectAll(query) {
     return console.log('cannot connect to database');
     // get all data from supabase
     const selectAllDataFromDB = async () => {
-        const {data, error} = await supabase.from(query.table)
+        const columnOrder = query.orderBy || 'id'
+        const {data, error} = query.whereColumn ? 
+                            await supabase.from(query.table)
                             .select(query.selectColumn)
-                            .order('id', {ascending: true})
+                            .eq(query.whereColumn, query.whereValue)
+                            .order(columnOrder, {ascending: true})
+                            :
+                            await supabase.from(query.table)
+                            .select(query.selectColumn)
+                            .order(columnOrder, {ascending: true})
         return {data: data, error: error}
     }
     return selectAllDataFromDB()
@@ -53,9 +60,62 @@ function updateData(query) {
     return updateDataToDB()
 }
 
+function queryBuilder(table, selectColumn, whereColumn = null, whereValue = null, action = null, orderBy = null) {
+    const qb = {}
+    // target table
+    qb.table = table
+    // select which columns wanna display 
+    const choosenColumns = []
+    // 1 = username, 2 = alias, 3 = region, 4 = status
+    for(let col of selectColumn.toString().split('')) {
+        switch(+col) {
+            // table players
+            case 1: choosenColumns.push('username'); break
+            case 2: choosenColumns.push('alias'); break
+            case 3: choosenColumns.push('region'); break
+            // table schedules
+            case 4: choosenColumns.push('title'); break
+            case 5: choosenColumns.push('date'); break
+            case 6: choosenColumns.push('description'); break
+            // both table have status column
+            case 7: choosenColumns.push('id'); break
+            case 8: choosenColumns.push('status'); break
+        }
+    }
+    qb.selectColumn = choosenColumns.join(', ')
+    // the column used as the search area
+    if(whereColumn) qb.whereColumn = whereColumn
+    // the value used to search data in whereColumn
+    if(whereValue) qb.whereValue = whereValue
+    // order data by column
+    if(orderBy) qb.orderBy = orderBy
+    // action used to insert / update / delete a row (select query doesnt need action)
+    if(action) {
+        switch(action.type) {
+            case 'insert':
+                Object.defineProperties(qb, {
+                    insertColumn: {
+                        get: function () { return action.obj }, enumerable: true
+                    }
+                })
+                break
+            case 'update':
+                Object.defineProperties(qb, {
+                    updateColumn: {
+                        get: function () { return action.obj }, enumerable: true
+                    }
+                })
+                break
+        }
+    }
+    // return object
+    return qb
+}
+
 module.exports = {
     selectAll,
     selectOne,
     insertDataRow,
-    updateData
+    updateData,
+    queryBuilder
 }
