@@ -38,37 +38,37 @@ function greetingsReminder(bot) {
                 case '5':
                     if(todayGreetings.subuh === false) {
                         todayGreetings.subuh = true
-                        result.send('selamat subuh, bang :yawning_face:')
+                        result.send('<@&1185102820769280091>\nselamat subuh, bang :yawning_face:')
                     }
                     break
                 case '7':
                     if(todayGreetings.pagi === false) {
                         todayGreetings.pagi = true
-                        result.send('selamat pagi, bang :expressionless:')
+                        result.send('<@&1185102820769280091>\nselamat pagi, bang :expressionless:')
                     }
                     break
                 case '12':
                     if(todayGreetings.siang === false) {
                         todayGreetings.siang = true
-                        result.send('selamat siang, bang :face_exhaling:')
+                        result.send('<@&1185102820769280091>\nselamat siang, bang :face_exhaling:')
                     }
                     break
                 case '15':
                     if(todayGreetings.sore === false) {
                         todayGreetings.sore = true
-                        result.send('selamat sore, bang :sweat:')
+                        result.send('<@&1185102820769280091>\nselamat sore, bang :sweat:')
                     }
                     break
                 case '18':
                     if(todayGreetings.magrib === false) {
                         todayGreetings.magrib = true
-                        result.send('selamat magrib, bang :nerd:')
+                        result.send('<@&1185102820769280091>\nselamat magrib, bang :nerd:')
                     }
                     break
                 case '22':
                     if(todayGreetings.pingsan === false) {
                         todayGreetings.pingsan = true
-                        result.send('selamat pingsan, bang :sleeping:')
+                        result.send('<@&1185102820769280091>\nselamat pingsan, bang :sleeping:')
                     }
                     break
             }

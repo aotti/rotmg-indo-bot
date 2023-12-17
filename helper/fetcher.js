@@ -1,4 +1,4 @@
-function fetcher(url, singleData = true) {
+function fetcherRealmEye(url, singleData = true) {
     return fetch(url, {
         method: 'GET',
         cache: "force-cache"
@@ -36,6 +36,18 @@ function fetcher(url, singleData = true) {
     })
 }
 
+function fetcherManageRole(url, method) {
+    return fetch(url, {
+        method: method,
+        headers: {
+            Authorization: `Bot ${process.env.TOKEN}`
+        }
+    })
+    .then(data => { return data.status === 204 })
+    .catch(err => console.log(err))
+}
+
 module.exports = {
-    fetcher
+    fetcherRealmEye,
+    fetcherManageRole
 }

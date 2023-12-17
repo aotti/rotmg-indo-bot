@@ -133,7 +133,7 @@ const commands = [
                     }
                 ]
             },
-            // set mabar schedule
+            // edit mabar schedule
             {
                 type: ApplicationCommandOptionType.Subcommand,
                 name: 'edit_mabar',
@@ -160,6 +160,23 @@ const commands = [
                         type: ApplicationCommandOptionType.String,
                         name: 'description',
                         description: 'additional ingfo about the mabar'
+                    }
+                ]
+            },
+            {
+                type: ApplicationCommandOptionType.Subcommand,
+                name: 'wawan_ping',
+                description: 'add/remove "agak wawan" role to user',
+                options: [
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'status',
+                        description: 'role status',
+                        required: true,
+                        choices: [
+                            { name: 'ON', value: 'ON' },
+                            { name: 'OFF', value: 'OFF' }
+                        ]
                     }
                 ]
             }

@@ -1,7 +1,7 @@
 const { selectOne, insertDataRow, updateData, selectAll, queryBuilder } = require('../database/databaseQueries')
-const { EmbedBuilder } = require('discord.js')
+const { EmbedBuilder, GuildMemberRoleManager } = require('discord.js')
 const { pagination, ButtonTypes, ButtonStyles } = require('@devraelfreeze/discordjs-pagination');
-const { fetcher } = require('../helper/fetcher');
+const { fetcherRealmEye, fetcherManageRole } = require('../helper/fetcher');
 
 function setReplyContent(type, data) {
     if(type === 'not found') {
@@ -116,6 +116,7 @@ function replyMessage(interact) {
             switch(interact.options.getSubcommand()) {
                 // sub command
                 case 'search':
+                    console.log(interact.user.username, '> starting search command');
                     // get player input value
                     const inputUsername = interact.options.get('username').value.toLowerCase()
                     // start search in database
@@ -130,7 +131,7 @@ function replyMessage(interact) {
                         // waiting reply 
                         interact.deferReply({ ephemeral: true })
                         // get realmeye api https://realmeye-api.glitch.me/player/[Player_Name]
-                        const getRealmAPI = await fetcher(`https://realmeye-api.glitch.me/player/${result.data[0].username}`)
+                        const getRealmAPI = await fetcherRealmEye(`https://realmeye-api.glitch.me/player/${result.data[0].username}`)
                         // merge data from db AND realm api
                         const replyObj = {
                             // data from api
@@ -145,6 +146,7 @@ function replyMessage(interact) {
                     })
                     break
                 case 'all_players':
+                    console.log(interact.user.username, '> starting all_players command');
                     // start get all player data
                     new Promise(resolve => {
                         const query = queryBuilder('players', 1)
@@ -161,7 +163,7 @@ function replyMessage(interact) {
                         // input all status & username to array
                         for(let i in result.data) {
                             // get realmeye api https://realmeye-api.glitch.me/player/[Player_Name]
-                            const getRealmAPI = await fetcher(`https://realmeye-api.glitch.me/player/${result.data[i].username}`, false)
+                            const getRealmAPI = await fetcherRealmEye(`https://realmeye-api.glitch.me/player/${result.data[i].username}`, false)
                             playersArr.push(`${+i+1}. [${getRealmAPI.status}] ${result.data[i].username}`)
                         }
                         // get all active players
@@ -213,6 +215,7 @@ function replyMessage(interact) {
                     })
                     break
                 case 'insert':
+                    console.log(interact.user.username, '> starting insert command');
                     // check if user is admin
                     if(checkAdmin(interact.user.id) === -1) {
                         // not admin
@@ -245,6 +248,7 @@ function replyMessage(interact) {
                     }
                     break
                 case 'edit':
+                    console.log(interact.user.username, '> starting edit command');
                     // check if user is admin
                     if(checkAdmin(interact.user.id) === -1) {
                         // not admin
@@ -282,6 +286,7 @@ function replyMessage(interact) {
                     }
                     break
                 case 'mabar_video':
+                    console.log(interact.user.username, '> starting mabar_video command');
                     const videoLinks = {
                         mabar: {
                             oryx3: [
@@ -337,6 +342,7 @@ function replyMessage(interact) {
                     interact.reply({ embeds: [videoEmbed], ephemeral: true })
                     break
                 case 'set_mabar':
+                    console.log(interact.user.username, '> starting set_mabar command');
                     // check if user is admin
                     if(checkAdmin(interact.user.id) === -1) {
                         // not admin
@@ -369,6 +375,7 @@ function replyMessage(interact) {
                     }
                     break
                 case 'check_mabar':
+                    console.log(interact.user.username, '> starting check_mabar command');
                     // start get all mabar schedules
                     new Promise(resolve => {
                         const inputStatus = interact.options.get('status').value.toLowerCase()
@@ -450,6 +457,7 @@ function replyMessage(interact) {
                     })
                     break
                 case 'edit_mabar':
+                    console.log(interact.user.username, '> starting edit_mabar command');
                     if(checkAdmin(interact.user.id) === -1) {
                         // not admin
                         return interact.reply({ content: 'Hanya **Admin** yang boleh menjalankan command ini.', ephemeral: true })
@@ -478,6 +486,61 @@ function replyMessage(interact) {
                             const replyContent = setReplyContent('edit_mabar', result.data[0])
                             interact.reply({ content: replyContent, ephemeral: true })
                         })
+                    }
+                    break
+                case 'wawan_ping':
+                    console.log(interact.user.username, '> starting wawan_ping command');
+                    const roleObj = {
+                        guildId: '478542780243902464',
+                        userId: interact.user.id,
+                        roleId: '1185102820769280091'
+                    }
+                    // role endpoint
+                    const roleEndpoint = `https://discord.com/api/v10/guilds/${roleObj.guildId}/members/${roleObj.userId}/roles/${roleObj.roleId}`
+                    // check input value
+                    const inputStatus = interact.options.get('status').value.toLowerCase()
+                    if(inputStatus === 'on') {
+                        const manageRoleObj = {
+                            type: 'add',
+                            fetchMethod: 'PUT',
+                            checkMessage: 'You already have the role <:thonknoose:517990244600119297>',
+                            successMessage: 'Role added :ok:',
+                            failedMessage: 'Failed to add role :crying_cat_face:'
+                        }
+                        runManageRole(manageRoleObj)
+                    }
+                    else if(inputStatus === 'off') {
+                        const manageRoleObj = {
+                            type: 'delete',
+                            fetchMethod: 'DELETE',
+                            checkMessage: 'You dont have the role :skull:',
+                            successMessage: 'Role deleted :fire:',
+                            failedMessage: 'Failed to add role :crying_cat_face:'
+                        }
+                        runManageRole(manageRoleObj)
+                    }
+                    async function runManageRole(manageRoleObj) {
+                        const { type, fetchMethod, checkMessage, successMessage, failedMessage } = manageRoleObj
+                        // check role before add
+                        const checkRole = await interact.guild.members.fetch(roleObj.userId)
+                        // user already has the role
+                        switch(true) {
+                            // add role but already has it > checkRole = true
+                            case type === 'add' && checkRole.roles.cache.has(roleObj.roleId):
+                            // delete role but dont have it > checkRole = false === false
+                            case type === 'delete' && (checkRole.roles.cache.has(roleObj.roleId) === false):
+                                interact.reply({ content: checkMessage, ephemeral: true })
+                                break
+                            default:
+                                // manage role fetch
+                                const manageRoleFetch = await fetcherManageRole(roleEndpoint, fetchMethod)
+                                // success manage role to user 
+                                if(manageRoleFetch) 
+                                    interact.reply({ content: successMessage, ephemeral: true })
+                                // failed to manage role to user 
+                                else 
+                                    interact.reply({ content: failedMessage, ephemeral: true })
+                        }
                     }
                     break
             }

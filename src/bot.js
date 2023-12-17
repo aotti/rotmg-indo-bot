@@ -23,7 +23,7 @@ bot.on('ready', (b) => {
 })
 
 // listen to any slash command
-bot.on('interactionCreate', (interact) => {
+bot.on('interactionCreate', async (interact) => {
     // check if user really use slash command
     if(!interact.isChatInputCommand()) return
     // reply to user who interacted with slash commands
