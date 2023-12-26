@@ -163,6 +163,7 @@ const commands = [
                     }
                 ]
             },
+            // add/remove role "agak wawan"
             {
                 type: ApplicationCommandOptionType.Subcommand,
                 name: 'wawan_ping',
@@ -176,6 +177,31 @@ const commands = [
                         choices: [
                             { name: 'ON', value: 'ON' },
                             { name: 'OFF', value: 'OFF' }
+                        ]
+                    }
+                ]
+            },
+            // weather report
+            {
+                type: ApplicationCommandOptionType.Subcommand,
+                name: 'weather',
+                description: 'weather report in Indonesia',
+                options: [
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'city',
+                        description: 'get weather report from chosen city',
+                        required: true,
+                        choices: [
+                            { name: 'Jakarta Pusat', value: 'dki-jakarta,area1' },
+                            { name: 'Jakarta Utara', value: 'dki-jakarta,area4' },
+                            { name: 'Jakarta Timur', value: 'dki-jakarta,area3' },
+                            { name: 'Jakarta Selatan', value: 'dki-jakarta,area2' },
+                            { name: 'Jakarta Barat', value: 'dki-jakarta,area0' },
+                            { name: 'Bekasi', value: 'jawa-barat,bekasi' },
+                            { name: 'Tangsel', value: 'banten,serpong' },
+                            { name: 'Semarang', value: 'jawa-tengah,semarang' },
+                            { name: 'Yogyakarta', value: 'di-yogyakarta,yogyakarta' }
                         ]
                     }
                 ]

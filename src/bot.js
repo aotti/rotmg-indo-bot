@@ -15,7 +15,7 @@ const bot = new Client({
 
 // log message when bot online
 bot.on('ready', (b) => {
-    console.log(`${b.user.tag} is online`);
+    console.log(`${b.user.tag} is online at ${new Date().toLocaleTimeString()}`);
     // send greeting message on morning, noon, afternoon, evening 
     greetingsReminder(bot)
     // send mabar message once

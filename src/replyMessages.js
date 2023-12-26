@@ -1,7 +1,7 @@
 const { selectOne, insertDataRow, updateData, selectAll, queryBuilder } = require('../database/databaseQueries')
 const { EmbedBuilder, GuildMemberRoleManager } = require('discord.js')
 const { pagination, ButtonTypes, ButtonStyles } = require('@devraelfreeze/discordjs-pagination');
-const { fetcherRealmEye, fetcherManageRole } = require('../helper/fetcher');
+const { fetcherRealmEye, fetcherManageRole, fetcherWeather } = require('../helper/fetcher');
 
 function setReplyContent(type, data) {
     if(type === 'not found') {
@@ -109,14 +109,16 @@ function replyMessage(interact) {
     // reply to user who interacted with slash commands
     switch(interact.commandName) {
         case 'greetings':
-            interact.reply('selamat subuh, bang')
+            console.log(interact.member.nickname, '> starting greetings command');
+            const randReply = Math.round(Math.random()) === 1 ? 'kk lobster syuki 🥰' : 'kk lobster kirai <:tsundere:1186674638093295616>'
+            interact.reply(randReply)
             break
         // main command
         case 'indog':
             switch(interact.options.getSubcommand()) {
                 // sub command
                 case 'search':
-                    console.log(interact.user.username, '> starting search command');
+                    console.log(interact.member.nickname, '> starting search command');
                     // get player input value
                     const inputUsername = interact.options.get('username').value.toLowerCase()
                     // start search in database
@@ -130,12 +132,18 @@ function replyMessage(interact) {
                         if(resultHandler(interact, result, inputUsername)) return
                         // waiting reply 
                         interact.deferReply({ ephemeral: true })
+                        // fetch options
+                        const fetchOptions = {
+                            method: 'GET',
+                            cache: "force-cache"
+                        }
                         // get realmeye api https://realmeye-api.glitch.me/player/[Player_Name]
-                        const getRealmAPI = await fetcherRealmEye(`https://realmeye-api.glitch.me/player/${result.data[0].username}`)
+                        const realmAPIEndpoint = `https://realmeye-api.glitch.me/player/${result.data[0].username}`
+                        const realmAPIResult = await fetcherRealmEye(realmAPIEndpoint, fetchOptions)
                         // merge data from db AND realm api
                         const replyObj = {
                             // data from api
-                            ...getRealmAPI,
+                            ...realmAPIResult,
                             // data from db
                             ...result.data[0]
                         }
@@ -146,7 +154,7 @@ function replyMessage(interact) {
                     })
                     break
                 case 'all_players':
-                    console.log(interact.user.username, '> starting all_players command');
+                    console.log(interact.member.nickname, '> starting all_players command');
                     // start get all player data
                     new Promise(resolve => {
                         const query = queryBuilder('players', 1)
@@ -160,11 +168,17 @@ function replyMessage(interact) {
                         // players container
                         const playersObj = {}
                         const playersArr = []
+                        // fetch options
+                        const fetchOptions = {
+                            method: 'GET',
+                            cache: "force-cache"
+                        }
                         // input all status & username to array
                         for(let i in result.data) {
                             // get realmeye api https://realmeye-api.glitch.me/player/[Player_Name]
-                            const getRealmAPI = await fetcherRealmEye(`https://realmeye-api.glitch.me/player/${result.data[i].username}`, false)
-                            playersArr.push(`${+i+1}. [${getRealmAPI.status}] ${result.data[i].username}`)
+                            const realmAPIEndpoint = `https://realmeye-api.glitch.me/player/${result.data[i].username}`
+                            const realmAPIResult = await fetcherRealmEye(realmAPIEndpoint, fetchOptions, false)
+                            playersArr.push(`${+i+1}. [${realmAPIResult.status}] ${result.data[i].username}`)
                         }
                         // get all active players
                         const activePlayers = playersArr.map(v => { return v.match('aktif') }).filter(i => i).length
@@ -215,7 +229,7 @@ function replyMessage(interact) {
                     })
                     break
                 case 'insert':
-                    console.log(interact.user.username, '> starting insert command');
+                    console.log(interact.member.nickname, '> starting insert command');
                     // check if user is admin
                     if(checkAdmin(interact.user.id) === -1) {
                         // not admin
@@ -248,7 +262,7 @@ function replyMessage(interact) {
                     }
                     break
                 case 'edit':
-                    console.log(interact.user.username, '> starting edit command');
+                    console.log(interact.member.nickname, '> starting edit command');
                     // check if user is admin
                     if(checkAdmin(interact.user.id) === -1) {
                         // not admin
@@ -286,7 +300,7 @@ function replyMessage(interact) {
                     }
                     break
                 case 'mabar_video':
-                    console.log(interact.user.username, '> starting mabar_video command');
+                    console.log(interact.member.nickname, '> starting mabar_video command');
                     const videoLinks = {
                         mabar: {
                             oryx3: [
@@ -339,10 +353,11 @@ function replyMessage(interact) {
                             Void ~ 𝟷𝚜𝚝 [youtube](${videoLinks.duo.void[0].youtube}) & [discord](${videoLinks.duo.void[0].discord})
                             Void ~ 𝟸𝚗𝚍 [youtube](${videoLinks.duo.void[1].youtube})`
                         })
+                    // send embed reply
                     interact.reply({ embeds: [videoEmbed], ephemeral: true })
                     break
                 case 'set_mabar':
-                    console.log(interact.user.username, '> starting set_mabar command');
+                    console.log(interact.member.nickname, '> starting set_mabar command');
                     // check if user is admin
                     if(checkAdmin(interact.user.id) === -1) {
                         // not admin
@@ -375,7 +390,7 @@ function replyMessage(interact) {
                     }
                     break
                 case 'check_mabar':
-                    console.log(interact.user.username, '> starting check_mabar command');
+                    console.log(interact.member.nickname, '> starting check_mabar command');
                     // start get all mabar schedules
                     new Promise(resolve => {
                         const inputStatus = interact.options.get('status').value.toLowerCase()
@@ -457,7 +472,7 @@ function replyMessage(interact) {
                     })
                     break
                 case 'edit_mabar':
-                    console.log(interact.user.username, '> starting edit_mabar command');
+                    console.log(interact.member.nickname, '> starting edit_mabar command');
                     if(checkAdmin(interact.user.id) === -1) {
                         // not admin
                         return interact.reply({ content: 'Hanya **Admin** yang boleh menjalankan command ini.', ephemeral: true })
@@ -489,14 +504,12 @@ function replyMessage(interact) {
                     }
                     break
                 case 'wawan_ping':
-                    console.log(interact.user.username, '> starting wawan_ping command');
+                    console.log(interact.member.nickname, '> starting wawan_ping command');
                     const roleObj = {
                         guildId: '478542780243902464',
                         userId: interact.user.id,
                         roleId: '1185102820769280091'
                     }
-                    // role endpoint
-                    const roleEndpoint = `https://discord.com/api/v10/guilds/${roleObj.guildId}/members/${roleObj.userId}/roles/${roleObj.roleId}`
                     // check input value
                     const inputStatus = interact.options.get('status').value.toLowerCase()
                     if(inputStatus === 'on') {
@@ -521,27 +534,86 @@ function replyMessage(interact) {
                     }
                     async function runManageRole(manageRoleObj) {
                         const { type, fetchMethod, checkMessage, successMessage, failedMessage } = manageRoleObj
+                        // role endpoint
+                        const roleEndpoint = `https://discord.com/api/v10/guilds/${roleObj.guildId}/members/${roleObj.userId}/roles/${roleObj.roleId}`
                         // check role before add
                         const checkRole = await interact.guild.members.fetch(roleObj.userId)
                         // user already has the role
                         switch(true) {
-                            // add role but already has it > checkRole = true
+                            // add role > but already has it, checkRole = true
                             case type === 'add' && checkRole.roles.cache.has(roleObj.roleId):
-                            // delete role but dont have it > checkRole = false === false
+                            // delete role > but dont have it, checkRole = false === false (true)
                             case type === 'delete' && (checkRole.roles.cache.has(roleObj.roleId) === false):
                                 interact.reply({ content: checkMessage, ephemeral: true })
                                 break
                             default:
                                 // manage role fetch
-                                const manageRoleFetch = await fetcherManageRole(roleEndpoint, fetchMethod)
+                                const fetchOptions = {
+                                    method: fetchMethod,
+                                    headers: {
+                                        Authorization: `Bot ${process.env.TOKEN}`
+                                    }
+                                }
+                                const manageRoleResult = await fetcherManageRole(roleEndpoint, fetchOptions)
                                 // success manage role to user 
-                                if(manageRoleFetch) 
+                                if(manageRoleResult) 
                                     interact.reply({ content: successMessage, ephemeral: true })
                                 // failed to manage role to user 
                                 else 
                                     interact.reply({ content: failedMessage, ephemeral: true })
                         }
                     }
+                    break
+                case 'weather':
+                    console.log(interact.member.nickname, '> starting weather command');
+                    // user input
+                    const inputCity = interact.options.get('city').value
+                    const [province, city] = inputCity.split(',')
+                    // fetch materials
+                    const weatherEndpoint = `https://cuaca-gempa-rest-api.vercel.app/weather/${province}/${city.match('area') ? '' : city}`
+                    const fetchOptions = {
+                        method: 'GET'
+                    }
+                    // get weather api data
+                    const areaData = city.match('area') ? { index: city.slice(-1) } : null
+                    fetcherWeather(weatherEndpoint, fetchOptions, areaData)
+                    .then(weatherData => {
+                        const weatherDesc = "Data ini didapat dari API BMKG" +
+                                            "\ndan untuk 3 hari kedepan (katanya <:juri:515069402253885440>)" +
+                                            "\n───────────────────" +
+                                            "\n`Provinsi:` " + weatherData.province +
+                                            "\n`Kota    :` " + weatherData.city
+                        const weatherEmbed = new EmbedBuilder()
+                            .setTitle('Weather Report Indog :cloud: :sunglasses: :thermometer:')
+                            .setDescription(weatherDesc)
+                        // add fields (2 columns)
+                        const weatherFields = ['Temperature', 'Weather']
+                        for(let field of weatherFields) {
+                            // gather all data from each fields
+                            for(let data of weatherData[field.toLowerCase()]) {
+                                // ** **\n used to make padding-top
+                                const dataName = field == 'Temperature' ? `${field}\n${data.date}` : `** **\n${field}\n${data.date}`
+                                // push all time & temp/name for current date
+                                const dataValue = []
+                                data.other.forEach((v, i) => {
+                                    if(field == 'Temperature') {
+                                        dataValue.push(`time: ${v.time}\ntemp: ${v.temp}`)
+                                    }
+                                    else {
+                                        dataValue.push(`time: ${v.time}\nstatus: ${v.name}`)
+                                    }
+                                })
+                                // insert all data to fields
+                                weatherEmbed.addFields({
+                                    name: dataName, 
+                                    value: dataValue.join('\n───────────────────\n'), 
+                                    inline: true
+                                })
+                            }
+                        }
+                        // send embed reply
+                        interact.reply({ embeds: [weatherEmbed], ephemeral: true })
+                    })
                     break
             }
             break
