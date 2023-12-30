@@ -2,6 +2,7 @@ const { selectOne, insertDataRow, updateData, selectAll, queryBuilder } = requir
 const { EmbedBuilder, GuildMemberRoleManager } = require('discord.js')
 const { pagination, ButtonTypes, ButtonStyles } = require('@devraelfreeze/discordjs-pagination');
 const { fetcherRealmEye, fetcherManageRole, fetcherWeather } = require('../helper/fetcher');
+const { weatherConditionTranslate, weatherFieldName } = require('../helper/weatherChoices');
 
 function setReplyContent(type, data) {
     if(type === 'not found') {
@@ -426,10 +427,12 @@ function replyMessage(interact) {
                         const embedFields = 6
                         const embedArray = []
                         // create multiple embeds
+                        const scheduleToday = new Date().toLocaleDateString('en-us', {month: 'long', day: 'numeric'})
                         for(let i=0; i<embedPages; i++) {
                             const checkScheduleStatus = scheduleObj['col_1'] ? 
-                                                        scheduleObj['col_1'][0].status == 'pending' ?
-                                                        'list of pending mabar' : 'list of completed mabar'
+                                                        (scheduleObj['col_1'][0].status == 'pending' ?
+                                                        'List of pending mabar' : 'List of completed mabar') + 
+                                                        (`\n**Today:** ${scheduleToday}`)
                                                         : 
                                                         null
                             // create embed
@@ -568,51 +571,75 @@ function replyMessage(interact) {
                     console.log(interact.member.nickname, '> starting weather command');
                     // user input
                     const inputCity = interact.options.get('city').value
-                    const [province, city] = inputCity.split(',')
+                    const inputType = interact.options.get('type').value
                     // fetch materials
-                    const weatherEndpoint = `https://cuaca-gempa-rest-api.vercel.app/weather/${province}/${city.match('area') ? '' : city}`
+                    const weatherParams = {
+                        type: inputType,
+                        key: process.env.WEATHER_API_KEY,
+                        query: inputCity
+                    }
+                    const weatherEndpoint = `http://api.weatherapi.com/v1/forecast.json?key=${weatherParams.key}&q=${weatherParams.query}&days=2`
                     const fetchOptions = {
                         method: 'GET'
                     }
                     // get weather api data
-                    const areaData = city.match('area') ? { index: city.slice(-1) } : null
-                    fetcherWeather(weatherEndpoint, fetchOptions, areaData)
-                    .then(weatherData => {
-                        const weatherDesc = "Data ini didapat dari API BMKG" +
-                                            "\ndan untuk 3 hari kedepan (katanya <:juri:515069402253885440>)" +
-                                            "\n───────────────────" +
-                                            "\n`Provinsi:` " + weatherData.province +
-                                            "\n`Kota    :` " + weatherData.city
-                        const weatherEmbed = new EmbedBuilder()
-                            .setTitle('Weather Report Indog :cloud: :sunglasses: :thermometer:')
-                            .setDescription(weatherDesc)
-                        // add fields (2 columns)
-                        const weatherFields = ['Temperature', 'Weather']
-                        for(let field of weatherFields) {
-                            // gather all data from each fields
-                            for(let data of weatherData[field.toLowerCase()]) {
-                                // ** **\n used to make padding-top
-                                const dataName = field == 'Temperature' ? `${field}\n${data.date}` : `** **\n${field}\n${data.date}`
-                                // push all time & temp/name for current date
-                                const dataValue = []
-                                data.other.forEach((v, i) => {
-                                    if(field == 'Temperature') {
-                                        dataValue.push(`time: ${v.time}\ntemp: ${v.temp}`)
-                                    }
-                                    else {
-                                        dataValue.push(`time: ${v.time}\nstatus: ${v.name}`)
-                                    }
-                                })
-                                // insert all data to fields
-                                weatherEmbed.addFields({
-                                    name: dataName, 
-                                    value: dataValue.join('\n───────────────────\n'), 
-                                    inline: true
-                                })
-                            }
+                    fetcherWeather(weatherEndpoint, fetchOptions, weatherParams.type)
+                    .then(weather => {
+                        const { perDay, perHour } = weather
+                        // ------------- PER DAY STUFF -------------
+                        // ------------- PER DAY STUFF -------------
+                        const weatherPerDayDescription = "Data cuaca didapat dari weather.com" +
+                                                    "\n────────────────────────────" +
+                                                    "\n`Versi   :` Ringkasan" +
+                                                    "\n────────────────────────────" 
+                        // field value                            
+                        // nullable = time, feelslike, rain_chance
+                        const weatherPerDayContent = "\n`kota       :` " + perDay.city +
+                                                "\n`wilayah    :` " + perDay.region +
+                                                (perDay.time ? "\n`waktu      :` " + perDay.time : "\u2008") +
+                                                "\n`suhu       :` " + perDay.temp +
+                                                (perDay.temp_feelslike ? " terasa seperti " + perDay.temp_feelslike : "\u2008") +
+                                                "\n`kondisi    :` " + weatherConditionTranslate(perDay.condition) +
+                                                "\n`kelembapan :` " + perDay.humidity +
+                                                (perDay.rain_chance ? "\n`kemungkinan hujan :` " + perDay.rain_chance : "\u2008") 
+                        // weather perDay embed 
+                        const weatherPerDayEmbed = new EmbedBuilder()
+                            .setTitle('Laporan Cuaca Indog :cloud: :sunglasses: :thermometer:')
+                            .setDescription(weatherPerDayDescription)
+                            .setThumbnail(`https:${perDay.img}`)
+                            .addFields({
+                                name: perDay.date.match(new Date().getDate()) ? 
+                                    `${perDay.date} (today)`
+                                    : 
+                                    `${perDay.date} (tomorrow)`,
+                                value: weatherPerDayContent
+                            })
+                        // ------------- PER HOUR STUFF -------------
+                        // ------------- PER HOUR STUFF -------------
+                        const weatherPerHourDescription = "Data cuaca didapat dari weather.com" +
+                                                        "\n────────────────────────────" +
+                                                        "\n`Versi   :` Tiap beberapa jam" +
+                                                        "\n`Kota    :` " + perHour[0].city +
+                                                        "\n`Wilayah :` " + perHour[0].region +
+                                                        "\n────────────────────────────" 
+                        const weatherPerHourEmbed = new EmbedBuilder()
+                        .setTitle('Laporan Cuaca Indog :cloud: :sunglasses: :thermometer:')
+                        .setDescription(weatherPerHourDescription)
+                        for(let i in perHour) {
+                            // field value
+                            const weatherPerHourContent = "\n`suhu asli   :` " + perHour[i].temp + 
+                                                    "\n`suhu seperti:` " + perHour[i].temp_feelslike + 
+                                                    "\n`akan hujan  :` " + perHour[i].rain_chance
+                            // weather perHour embed
+                            weatherPerHourEmbed.addFields({
+                                name: weatherFieldName(+i, perHour[i].date, perHour[i].time, perHour[i].img, weather.firstHour),
+                                value: weatherPerHourContent,
+                                inline: true
+                            })
                         }
-                        // send embed reply
-                        interact.reply({ embeds: [weatherEmbed], ephemeral: true })
+                        // send reply
+                        const weatherEmbeds = [weatherPerDayEmbed, weatherPerHourEmbed]
+                        replyPagination(interact, weatherEmbeds)
                     })
                     break
             }

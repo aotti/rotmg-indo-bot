@@ -7,11 +7,13 @@ function selectAll(query) {
     const selectAllDataFromDB = async () => {
         const columnOrder = query.orderBy || 'id'
         const {data, error} = query.whereColumn ? 
+                            // order by CUSTOM
                             await supabase.from(query.table)
                             .select(query.selectColumn)
                             .eq(query.whereColumn, query.whereValue)
                             .order(columnOrder, {ascending: true})
                             :
+                            // order by ID
                             await supabase.from(query.table)
                             .select(query.selectColumn)
                             .order(columnOrder, {ascending: true})
@@ -25,7 +27,15 @@ function selectOne(query) {
         return console.log('cannot connect to database');
     // get one data from supabase
     const selectOneDataFromDB = async () => {
-        const {data, error} = await supabase.from(query.table)
+        const {data, error} = Array.isArray(query.whereColumn) ?
+                            // multiple where TRUE
+                            await supabase.from(query.table)
+                            .select(query.selectColumn)
+                            .eq(query.whereColumn[0], query.whereValue[0])
+                            .eq(query.whereColumn[1], query.whereValue[1])
+                            :
+                            // multiple where FALSE
+                            await supabase.from(query.table)
                             .select(query.selectColumn)
                             .eq(query.whereColumn, query.whereValue)
         return {data: data, error: error}

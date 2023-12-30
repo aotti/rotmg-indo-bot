@@ -1,5 +1,6 @@
 const { REST, Routes, ApplicationCommandOptionType } = require('discord.js');
-const { getNext3Weeks } = require('../helper/dateChoices');
+const getNext3Weeks = require('../helper/dateChoices');
+const { weatherCityList } = require('../helper/weatherChoices');
 
 const commands = [
     {
@@ -34,7 +35,7 @@ const commands = [
             {
                 type: ApplicationCommandOptionType.Subcommand,
                 name: 'insert',
-                description: 'insert new player',
+                description: 'insert new player (ADMIN ONLY)',
                 options: [
                     {
                         type: ApplicationCommandOptionType.String,
@@ -58,7 +59,7 @@ const commands = [
             {
                 type: ApplicationCommandOptionType.Subcommand,
                 name: 'edit',
-                description: 'edit player ingfo',
+                description: 'edit player ingfo (ADMIN ONLY)',
                 options: [
                     {
                         type: ApplicationCommandOptionType.String,
@@ -111,7 +112,7 @@ const commands = [
             {
                 type: ApplicationCommandOptionType.Subcommand,
                 name: 'set_mabar',
-                description: 'set reminder for mabar rotmeg',
+                description: 'set reminder for mabar rotmeg (ADMIN ONLY)',
                 options: [
                     {
                         type: ApplicationCommandOptionType.String,
@@ -137,13 +138,23 @@ const commands = [
             {
                 type: ApplicationCommandOptionType.Subcommand,
                 name: 'edit_mabar',
-                description: 'edit mabar schedule rotmeg',
+                description: 'edit mabar schedule rotmeg (ADMIN ONLY)',
                 options: [
                     {
                         type: ApplicationCommandOptionType.Integer,
                         name: 'id',
                         description: 'mabar id',
                         required: true
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'status',
+                        description: 'mabar status',
+                        required: true,
+                        choices: [
+                            { name: 'pending', value: 'pending' },
+                            { name: 'done', value: 'done' }
+                        ]
                     },
                     {
                         type: ApplicationCommandOptionType.String,
@@ -192,16 +203,16 @@ const commands = [
                         name: 'city',
                         description: 'get weather report from chosen city',
                         required: true,
+                        choices: weatherCityList()
+                    },
+                    {
+                        type: ApplicationCommandOptionType.String,
+                        name: 'type',
+                        description: 'report type',
+                        required: true,
                         choices: [
-                            { name: 'Jakarta Pusat', value: 'dki-jakarta,area1' },
-                            { name: 'Jakarta Utara', value: 'dki-jakarta,area4' },
-                            { name: 'Jakarta Timur', value: 'dki-jakarta,area3' },
-                            { name: 'Jakarta Selatan', value: 'dki-jakarta,area2' },
-                            { name: 'Jakarta Barat', value: 'dki-jakarta,area0' },
-                            { name: 'Bekasi', value: 'jawa-barat,bekasi' },
-                            { name: 'Tangsel', value: 'banten,serpong' },
-                            { name: 'Semarang', value: 'jawa-tengah,semarang' },
-                            { name: 'Yogyakarta', value: 'di-yogyakarta,yogyakarta' }
+                            { name: 'Today', value: 'current' },
+                            { name: 'Tomorrow', value: 'forecast' }
                         ]
                     }
                 ]

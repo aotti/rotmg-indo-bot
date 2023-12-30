@@ -103,14 +103,14 @@ function mabarReminder(bot) {
         // get all pending mabar
         const currentDate = new Date().toLocaleDateString('ko-KR').replace(/\W\s/g, '-').split('.')[0]
         new Promise(resolve => {
-            const query = queryBuilder('schedules', 45678, 'date', currentDate)
+            const query = queryBuilder('schedules', 45678, ['date', 'status'], [currentDate, 'pending'])
             // get data ascending by date
             resolve(selectOne(query))
         })
         .then(payload => {
             if(payload.data[0] == null) return
             const { title, description } = payload.data[0]
-            result.send(`@here\nHari ini ada jadwal mabar **${title}**\nnote: ${description}`)
+            result.send(`<@&496164930605547520>\nHari ini ada jadwal mabar **${title}**\nnote: ${description}`)
         })
     })
     .catch(err => console.log(err))

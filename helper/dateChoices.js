@@ -56,6 +56,4 @@ function dateIncrement(tempDateObj, datesInOneMonth) {
     return tempDateObj
 }
 
-module.exports = {
-    getNext3Weeks
-}
+module.exports = getNext3Weeks
