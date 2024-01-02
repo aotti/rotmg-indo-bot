@@ -5,7 +5,8 @@
     "main": "src/bot.js",
     "author": "dengkul",
     "scripts": {
-        "dev": "nodemon src/bot.js"
+        "dev": "nodemon src/bot.js",
+        "start": "node src/bot.js"
     },
     "dependencies": {
         "@devraelfreeze/discordjs-pagination": "^2.7.6",
