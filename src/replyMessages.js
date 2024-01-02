@@ -2,7 +2,7 @@ const { selectOne, insertDataRow, updateData, selectAll, queryBuilder } = requir
 const { EmbedBuilder, GuildMemberRoleManager } = require('discord.js')
 const { pagination, ButtonTypes, ButtonStyles } = require('@devraelfreeze/discordjs-pagination');
 const { fetcherRealmEye, fetcherManageRole, fetcherWeather } = require('../helper/fetcher');
-const { weatherConditionTranslate, weatherFieldName } = require('../helper/weatherChoices');
+const { weatherConditionTranslate, weatherFieldName, weatherPrecipitation } = require('../helper/weatherChoices');
 
 function setReplyContent(type, data) {
     if(type === 'not found') {
@@ -600,6 +600,7 @@ function replyMessage(interact) {
                                                 "\n`suhu       :` " + perDay.temp +
                                                 (perDay.temp_feelslike ? " terasa seperti " + perDay.temp_feelslike : "\u2008") +
                                                 "\n`kondisi    :` " + weatherConditionTranslate(perDay.condition) +
+                                                "\n`curah hujan:` " + weatherPrecipitation(perDay.precip) +
                                                 "\n`kelembapan :` " + perDay.humidity +
                                                 (perDay.rain_chance ? "\n`kemungkinan hujan :` " + perDay.rain_chance : "\u2008") 
                         // weather perDay embed 

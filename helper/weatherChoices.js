@@ -218,10 +218,22 @@ function weatherConditionTranslate(condition) {
     }
 }
 
+function weatherPrecipitation(precip) {
+    switch(true) {
+        case precip > 0.5 && precip <= 20: return `${precip} mm (ringan)`
+        case precip > 20 && precip <= 50: return `${precip} mm (sedang)`
+        case precip > 50 && precip <= 100: return `${precip} mm (lebat)`
+        case precip > 100 && precip <= 150: return `${precip} mm (lebat binggo)`
+        case precip > 150: return `${precip} mm (mungkin banjir)`
+        default: return `${precip} mm (santuy :sunglasses:)`
+    }
+}
+
 module.exports = {
     weatherCityList,
     weatherMonthNames,
     weatherFieldName,
     weatherEmoji,
-    weatherConditionTranslate
+    weatherConditionTranslate,
+    weatherPrecipitation
 }
