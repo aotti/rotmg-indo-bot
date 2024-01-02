@@ -83,16 +83,72 @@ function weatherFieldName(i, date, time, img, firstHour) {
 }
 
 function weatherEmoji(condition) {
-    if(condition.match(/with.thunder/i))
-        return ':thunder_cloud_rain:'
-    else if(condition.match(/rain|drizzle/i)) 
-        return ':cloud_rain:'
-    else if(condition.match(/fog|mist/i))
+    // patchy = :last_quarter_moon:
+    // light = :arrow_lower_right:
+    // moderate = :left_right_arrow:
+    // heavy, torrential = :arrow_upper_right:, :arrow_up:
+    // at times, shower, freezing = :clock3:, :shower:, :cold_face:
+    function getEmojis(regexArr, emojiArr) {
+        for(let i in regexArr) {
+            if(regexArr[i].test(condition)) 
+                return emojiArr[i]
+        }
+    }
+    // match the weather with emojis
+    const weRegexes = [] // weather emoji regexes
+    const weEmojis = []
+    // rain with thunder
+    if(condition.match(/with.thunder/i)) {
+        weRegexes.push(/patchy|light/gi, /moderate.or.heavy/gi)
+        weEmojis.push(
+            ':thunder_cloud_rain: :arrow_lower_right: :last_quarter_moon:', 
+            ':thunder_cloud_rain: :arrow_upper_right:'
+        )
+        return getEmojis(weRegexes, weEmojis)
+    }
+    // normal rain
+    else if(condition.match(/rain|drizzle|sleet/i)) {
+        weRegexes.push( 
+            // shower
+            /(?<=light.*)shower/gi, 
+            /(?<=moderate.*)shower/gi, 
+            /(?<=heavy|torrential.*)shower/gi,
+            // patchy
+            /patchy(?=light)/gi, 
+            /patchy.(?=moderate)/gi, 
+            /patchy.(?=freezing)/gi, 
+            /patchy/gi, 
+            // exact
+            /light/gi,
+            /moderate/gi,
+            /heavy|torrential/gi
+        )
+        weEmojis.push(
+            // shower
+            ':cloud_rain: :arrow_lower_right: :shower:', 
+            ':cloud_rain: :left_right_arrow: :shower:', 
+            ':cloud_rain: :arrow_upper_right: :shower:',
+            // patchy
+            ':cloud_rain: :arrow_lower_right: :last_quarter_moon:', 
+            ':cloud_rain: :left_right_arrow: :last_quarter_moon:', 
+            ':cloud_rain: :cold_face: :last_quarter_moon:', 
+            ':cloud_rain: :last_quarter_moon:', 
+            // exact
+            ':cloud_rain: :arrow_lower_right:',
+            ':cloud_rain: :left_right_arrow:',
+            ':cloud_rain: :arrow_upper_right:'
+        )
+        return getEmojis(weRegexes, weEmojis)
+    }
+    else if(condition.match(/fog|mist/i)) {
         return ':face_in_clouds:'
-    else if(condition.match(/cloudy/i))
+    }
+    else if(condition.match(/cloudy/i)) {
         return ':white_sun_cloud:'
-    else if(condition.match(/overcast/i))
+    }
+    else if(condition.match(/overcast/i)) {
         return ':cloud:'
+    }
     else 
         return ':partly_sunny:'
 }
@@ -112,10 +168,6 @@ function weatherConditionTranslate(condition) {
             return 'Berkabut'
         // translate more than 1 word
         default:
-            // patchy, light, moderate, heavy, torrential
-            // freezing
-            // rain, drizzle, sleet
-            // at times, with thunder, shower
             const conditionTextArr = []
             const splitCondition = condition.split(' ')
             for(let text of splitCondition) {
@@ -156,7 +208,12 @@ function weatherConditionTranslate(condition) {
                 }
             }
             // parse array to string then uppercase first letter
-            const translatedCondition = conditionTextArr.join(' ').charAt(0).toUpperCase() + conditionTextArr.join(' ').slice(1)
+            // check the text array length, if it has the same length as splitCondition
+            // then join text array. if not, just use the english text
+            const translatedCondition = conditionTextArr.length === splitCondition.length ?
+                                    conditionTextArr.join(' ').charAt(0).toUpperCase() + conditionTextArr.join(' ').slice(1)
+                                    :
+                                    condition
             return translatedCondition
     }
 }

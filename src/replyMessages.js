@@ -589,9 +589,9 @@ function replyMessage(interact) {
                         // ------------- PER DAY STUFF -------------
                         // ------------- PER DAY STUFF -------------
                         const weatherPerDayDescription = "Data cuaca didapat dari weather.com" +
-                                                    "\n────────────────────────────" +
+                                                    "\n───────────────────" +
                                                     "\n`Versi   :` Ringkasan" +
-                                                    "\n────────────────────────────" 
+                                                    "\n───────────────────" 
                         // field value                            
                         // nullable = time, feelslike, rain_chance
                         const weatherPerDayContent = "\n`kota       :` " + perDay.city +
@@ -618,9 +618,12 @@ function replyMessage(interact) {
                         // ------------- PER HOUR STUFF -------------
                         const weatherPerHourDescription = "Data cuaca didapat dari weather.com" +
                                                         "\n────────────────────────────" +
-                                                        "\n`Versi   :` Tiap beberapa jam" +
-                                                        "\n`Kota    :` " + perHour[0].city +
-                                                        "\n`Wilayah :` " + perHour[0].region +
+                                                        "\n:arrow_lower_right: : `ringan` :last_quarter_moon: : `tdk merata`" +
+                                                        "│ `Versi   :` Per beberapa jam" +
+                                                        "\n:left_right_arrow: : `sedang` :shower: : `sebentar  `" +
+                                                        "│ `Kota    :` " + perHour[0].city +
+                                                        "\n:arrow_upper_right: : `lebat ` :cold_face: : `dingin    `" +
+                                                        "│ `Wilayah :` " + perHour[0].region +
                                                         "\n────────────────────────────" 
                         const weatherPerHourEmbed = new EmbedBuilder()
                         .setTitle('Laporan Cuaca Indog :cloud: :sunglasses: :thermometer:')
