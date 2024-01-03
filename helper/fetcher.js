@@ -84,7 +84,7 @@ function fetcherWeather(url, options, type) {
             temp: newResult?.temp_c ? `${newResult.temp_c} C` : `min:${newResult.day.mintemp_c} C | avg:${newResult.day.avgtemp_c} C | max:${newResult.day.maxtemp_c} C`,
             temp_feelslike: newResult?.feelslike_c ? `${newResult.feelslike_c} C` : null,
             condition: newResult.condition?.text || newResult.day.condition.text,
-            precip: newResult?.precip_mm || newResult.totalprecip_mm,
+            precip: newResult?.precip_mm || newResult.day.totalprecip_mm,
             img: newResult.condition?.icon || newResult.day.condition.icon,
             humidity: newResult?.humidity ? `${newResult.humidity} %` : `${newResult.day.avghumidity} %`,
             rain_chance: newResult.day?.daily_chance_of_rain ? `${newResult.day.daily_chance_of_rain} %` : null

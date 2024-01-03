@@ -1,6 +1,20 @@
 const { queryBuilder, selectOne } = require("../database/databaseQueries");
 const { fetcherReminder } = require("../helper/fetcher");
 
+// utc +7
+const indonesiaDate = () => {
+    const d = new Date()
+    // utc time
+    const localTime = d.getTime()
+    const localOffset = d.getTimezoneOffset() * 60_000
+    const utc = localTime + localOffset
+    // indonesia time
+    const indonesiaOffset = 7
+    const indonesiaTime = utc + (3_600_000 * indonesiaOffset)
+    const indonesiaNow = new Date(indonesiaTime)
+    return {locale: indonesiaNow.toLocaleString(), localeKR: indonesiaNow.toLocaleDateString('ko-KR')}
+}
+// convert am/pm time to 24 hours
 const convertTime12to24 = (time12h) => {
     const [time, modifier] = time12h.split(' ');
     let [hours, minutes] = time.split(':');
@@ -44,7 +58,7 @@ function greetingsReminder(bot) {
         let startInterval = setInterval(() => { reminderInterval() }, interval);
         function reminderInterval() {
             // get current time 
-            const currentTime = new Date().toLocaleString().split(' ').slice(1).join(' ')
+            const currentTime = indonesiaDate().locale.split(' ').slice(1).join(' ')
             // get only the hours 
             const currentHours = +convertTime12to24(currentTime).split(':')[0]
             // proxy for detect object value changes
@@ -101,7 +115,7 @@ function mabarReminder(bot) {
     const channel = bot.channels.fetch(process.env.GENERAL_CHANNEL)
     channel.then(result => {
         // get all pending mabar
-        const currentDate = new Date().toLocaleDateString('ko-KR').replace(/\W\s/g, '-').split('.')[0]
+        const currentDate = indonesiaDate().localeKR.replace(/\W\s/g, '-').split('.')[0]
         new Promise(resolve => {
             const query = queryBuilder('schedules', 45678, ['date', 'status'], [currentDate, 'pending'])
             // get data ascending by date
@@ -118,5 +132,6 @@ function mabarReminder(bot) {
 
 module.exports = {
     greetingsReminder,
-    mabarReminder
+    mabarReminder,
+    indonesiaDate
 }

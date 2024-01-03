@@ -1,6 +1,6 @@
 const { Client, IntentsBitField } = require('discord.js');
 const { replyMessage } = require('./replyMessages');
-const { greetingsReminder, mabarReminder } = require('./reminder');
+const { greetingsReminder, mabarReminder, indonesiaDate } = require('./reminder');
 require('dotenv').config()
 require('./register-commands')
 
@@ -15,7 +15,7 @@ const bot = new Client({
 
 // log message when bot online
 bot.on('ready', (b) => {
-    console.log(`${b.user.tag} is online at ${new Date().toLocaleTimeString()}`);
+    console.log(`${b.user.tag} is online at ${indonesiaDate().locale}`);
     // send greeting message on morning, noon, afternoon, evening 
     greetingsReminder(bot)
     // send mabar message once
