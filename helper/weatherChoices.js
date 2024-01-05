@@ -171,10 +171,13 @@ function weatherConditionTranslate(condition) {
             const conditionTextArr = []
             const splitCondition = condition.split(' ')
             for(let text of splitCondition) {
-                // patchy, light, moderate, heavy, torrential
-                if(text.match(/patchy|light|moderate|heavy|torrential/i)) {
+                // patchy
+                if(text.match(/patchy/i)) {
+                    conditionTextArr.push('(tidak merata)');
+                }
+                // light, moderate, heavy, torrential
+                else if(text.match(/light|moderate|heavy|torrential/i)) {
                     switch(text.toLowerCase()) {
-                        case 'patchy': conditionTextArr.push('tidak merata'); break
                         case 'light': conditionTextArr.push('ringan'); break
                         case 'moderate': conditionTextArr.push('sedang'); break
                         case 'heavy': conditionTextArr.push('lebat'); break
@@ -182,7 +185,7 @@ function weatherConditionTranslate(condition) {
                     }
                 }
                 // freezing, or, possible
-                else if(text.match(/freezing|or|possible/)) {
+                else if(text.match(/freezing|or|possible/i)) {
                     switch(text.toLowerCase()) {
                         case 'freezing': conditionTextArr.push('dingin'); break
                         case 'or': conditionTextArr.push('atau'); break
@@ -198,12 +201,13 @@ function weatherConditionTranslate(condition) {
                     }
                 }
                 // at times, with thunder, shower
-                else if(text.match(/at.times|with.thunder|shower/i)) {
+                else if(text.match(/(at|times)|(with|thunder)|shower/ig)) {
                     switch(text.toLowerCase()) {
-                        case 'at times': conditionTextArr.push('terkadang'); break
-                        case 'with thunder': conditionTextArr.push('dengan petir'); break
-                        case 'shower': case 'showers':
-                            conditionTextArr.push('(sebentar)'); break
+                        case 'at': conditionTextArr.push('kadang'); break
+                        case 'times': conditionTextArr.push('kala'); break
+                        case 'with': conditionTextArr.push('dengan'); break
+                        case 'thunder': conditionTextArr.push('petir'); break
+                        case 'shower': case 'showers': conditionTextArr.push('(sebentar)'); break
                     }
                 }
             }

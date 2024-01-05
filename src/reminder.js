@@ -85,6 +85,8 @@ function greetingsReminder(bot) {
                 const conditionTime = conditionKeys.indexOf(reminderResult.names[i])
                 // currentHours === reminderHours (time) & conditionTime !== -1 (condition) & todayGreetings.condition = false
                 if(currentHours === reminderHours && conditionTime !== -1 && proxyTodayGreetings[conditionKeys[conditionTime]] === false) {
+                    // send mabar reminder once
+                    if(currentHours === 7) mabarReminder(bot)
                     // message
                     const wawanRole = '<@&1185102820769280091>'
                     const reminderMessage = `${wawanRole}\nselamat ${reminderResult.names[i]}, bang ${reminderEmojis[conditionTime]}`
@@ -132,6 +134,5 @@ function mabarReminder(bot) {
 
 module.exports = {
     greetingsReminder,
-    mabarReminder,
     indonesiaDate
 }

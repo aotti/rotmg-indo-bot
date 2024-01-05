@@ -1,6 +1,6 @@
 const { Client, IntentsBitField } = require('discord.js');
 const { replyMessage } = require('./replyMessages');
-const { greetingsReminder, mabarReminder, indonesiaDate } = require('./reminder');
+const { greetingsReminder, indonesiaDate } = require('./reminder');
 require('dotenv').config()
 require('./register-commands')
 
@@ -18,8 +18,6 @@ bot.on('ready', (b) => {
     console.log(`${b.user.tag} is online at ${indonesiaDate().locale}`);
     // send greeting message on morning, noon, afternoon, evening 
     greetingsReminder(bot)
-    // send mabar message once
-    mabarReminder(bot)
 })
 
 // listen to any slash command
