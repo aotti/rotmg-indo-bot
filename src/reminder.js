@@ -1,5 +1,6 @@
 const { queryBuilder, selectOne } = require("../database/databaseQueries");
 const { fetcherReminder } = require("../helper/fetcher");
+const regCommands = require('./register-commands')
 
 // utc +7
 const indonesiaDate = () => {
@@ -33,19 +34,14 @@ const convertTime12to24 = (time12h) => {
 function greetingsReminder(bot) {
     const channel = bot.channels.fetch(process.env.GENERAL_CHANNEL)
     channel.then(async (result) => {
-        // object to save greetings
-        const todayGreetings = {
-            subuh: false,
-            pagi: false,
-            siang: false,
-            sore: false,
-            magrib: false,
-            isya: false,
-            pingsan: false
-        }
         const reminderEmojis = [
-            ':yawning_face:', ':expressionless:', ':face_exhaling:',
-            ':sweat:', ':nerd:', ':smirk_cat:', ':sleeping:'
+            { name: 'subuh', emoji: ':yawning_face:' },
+            { name: 'siang', emoji: ':face_exhaling:' },
+            { name: 'sore', emoji: ':sweat:' },
+            { name: 'magrib', emoji: ':nerd:' },
+            { name: 'isya', emoji: ':smirk_cat:' },
+            { name: 'pagi', emoji: ':expressionless:' },
+            { name: 'pingsan', emoji: ':sleeping:' }
         ]
         const reminderEndpoint = 'https://www.jadwalsholat.org/adzan/ajax/ajax.daily1.php?id=308'
         const fetchOptions = {
@@ -61,40 +57,33 @@ function greetingsReminder(bot) {
             const currentTime = indonesiaDate().locale.split(' ').slice(1).join(' ')
             // get only the hours 
             const currentHours = +convertTime12to24(currentTime).split(':')[0]
-            // proxy for detect object value changes
-            const handlerTodayGreetings = {
-                set(target, prop, value) {
-                    target[prop] = value
-                    console.log(currentTime, target);
-                }
-            }
-            const proxyTodayGreetings = new Proxy(todayGreetings, handlerTodayGreetings)
             // loop schedules
             for(let i in reminderResult.schedules) {
                 const [scheduleHours, scheduleMinutes] = reminderResult.schedules[i].split(':')
                 // the actual reminder 
                 const reminderHours = +scheduleMinutes <= 30 ? +scheduleHours : +scheduleHours + 1
-                // -1 hour before the actual reminder
-                // tambah kondisi interval === 3_600_000
+                // -1 hour before the actual reminder & only run when interval === 1 hour
                 if(currentHours === (reminderHours - 1) && interval === 3_600_000) {
                     // restart the loop with 25mins interval
-                    return restartInterval(1_500_000)
+                    return restartInterval(900_000)
                 }
-                // check the condition (pagi/siang/sore) and time (07:00/12:00/15:00)
-                const conditionKeys = Object.keys(todayGreetings)
-                const conditionTime = conditionKeys.indexOf(reminderResult.names[i])
-                // currentHours === reminderHours (time) & conditionTime !== -1 (condition) & todayGreetings.condition = false
-                if(currentHours === reminderHours && conditionTime !== -1 && proxyTodayGreetings[conditionKeys[conditionTime]] === false) {
-                    // send mabar reminder once
-                    if(currentHours === 7) mabarReminder(bot)
+                // currentHours === reminderHours (time)
+                if(currentHours === reminderHours) {
+                    if(currentHours === 7) {
+                        // send mabar reminder once
+                        mabarReminder(bot)
+                        // register command to update mabar_set command date
+                        regCommands()
+                    }
                     // message
                     const wawanRole = '<@&1185102820769280091>'
-                    const reminderMessage = `${wawanRole}\nselamat ${reminderResult.names[i]}, bang ${reminderEmojis[conditionTime]}`
-                    // set greetings to true, so the greetings only run 1x
-                    proxyTodayGreetings[conditionKeys[conditionTime]] = true
+                    // split the time (07:00) > get the hour > parse it to number > get the array index
+                    const emojiIndex = reminderEmojis.map(v => { return v.name }).indexOf(reminderResult.names[i])
+                    const reminderMessage = `${wawanRole}\nselamat ${reminderResult.names[i]}, bang ${reminderEmojis[emojiIndex].emoji}`
                     // send message
                     result.send(reminderMessage)
                     // restart the loop with 1 hour interval
+                    console.log(currentTime, reminderResult.names[i]);
                     return restartInterval(3_600_000)
                 }
             }

@@ -1,5 +1,5 @@
 const { selectOne, insertDataRow, updateData, selectAll, queryBuilder } = require('../database/databaseQueries')
-const { EmbedBuilder, GuildMemberRoleManager } = require('discord.js')
+const { EmbedBuilder } = require('discord.js')
 const { pagination, ButtonTypes, ButtonStyles } = require('@devraelfreeze/discordjs-pagination');
 const { fetcherRealmEye, fetcherManageRole, fetcherWeather } = require('../helper/fetcher');
 const { weatherConditionTranslate, weatherFieldName, weatherPrecipitation } = require('../helper/weatherChoices');
@@ -118,7 +118,7 @@ function replyMessage(interact) {
         case 'indog':
             switch(interact.options.getSubcommand()) {
                 // sub command
-                case 'search':
+                case 'player_search':
                     console.log(interact.member.nickname, '> starting search command');
                     // get player input value
                     const inputUsername = interact.options.get('username').value.toLowerCase()
@@ -154,7 +154,7 @@ function replyMessage(interact) {
                         interact.followUp({ content: replyContent, ephemeral: true })
                     })
                     break
-                case 'all_players':
+                case 'player_all':
                     console.log(interact.member.nickname, '> starting all_players command');
                     // start get all player data
                     new Promise(resolve => {
@@ -229,7 +229,7 @@ function replyMessage(interact) {
                         replyPagination(interact, embedArray)
                     })
                     break
-                case 'insert':
+                case 'player_insert':
                     console.log(interact.member.nickname, '> starting insert command');
                     // check if user is admin
                     if(checkAdmin(interact.user.id) === -1) {
@@ -262,7 +262,7 @@ function replyMessage(interact) {
                         })
                     }
                     break
-                case 'edit':
+                case 'player_edit':
                     console.log(interact.member.nickname, '> starting edit command');
                     // check if user is admin
                     if(checkAdmin(interact.user.id) === -1) {
@@ -357,7 +357,7 @@ function replyMessage(interact) {
                     // send embed reply
                     interact.reply({ embeds: [videoEmbed], ephemeral: true })
                     break
-                case 'set_mabar':
+                case 'mabar_set':
                     console.log(interact.member.nickname, '> starting set_mabar command');
                     // check if user is admin
                     if(checkAdmin(interact.user.id) === -1) {
@@ -390,7 +390,7 @@ function replyMessage(interact) {
                         })
                     }
                     break
-                case 'check_mabar':
+                case 'mabar_check':
                     console.log(interact.member.nickname, '> starting check_mabar command');
                     // start get all mabar schedules
                     new Promise(resolve => {
@@ -474,7 +474,7 @@ function replyMessage(interact) {
                         replyPagination(interact, embedArray)
                     })
                     break
-                case 'edit_mabar':
+                case 'mabar_edit':
                     console.log(interact.member.nickname, '> starting edit_mabar command');
                     if(checkAdmin(interact.user.id) === -1) {
                         // not admin
@@ -572,6 +572,12 @@ function replyMessage(interact) {
                     // user input
                     const inputCity = interact.options.get('city').value
                     const inputType = interact.options.get('type').value
+                    const inputDisplay = () => {
+                        if(interact.options.get('display'))
+                            return interact.options.get('display').value
+                        else 
+                            return null
+                    }
                     // fetch materials
                     const weatherParams = {
                         type: inputType,
@@ -642,8 +648,20 @@ function replyMessage(interact) {
                             })
                         }
                         // send reply
-                        const weatherEmbeds = [weatherPerDayEmbed, weatherPerHourEmbed]
-                        replyPagination(interact, weatherEmbeds)
+                        // reply for member only
+                        if(inputDisplay() === null) {
+                            const weatherEmbeds = [weatherPerDayEmbed, weatherPerHourEmbed]
+                            replyPagination(interact, weatherEmbeds)
+                        }
+                        // reply if admin input value on 'display' option
+                        else {
+                            // check if user is admin
+                            if(checkAdmin(interact.user.id) === -1) {
+                                // not admin
+                                return interact.reply({ content: 'Hanya **Admin** yang boleh menjalankan command ini.', ephemeral: true })
+                            }
+                            return interact.reply({ embeds: [weatherPerDayEmbed], ephemeral: inputDisplay() })
+                        }
                     })
                     break
             }

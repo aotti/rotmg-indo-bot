@@ -188,7 +188,7 @@ function weatherConditionTranslate(condition) {
                 else if(text.match(/freezing|or|possible/i)) {
                     switch(text.toLowerCase()) {
                         case 'freezing': conditionTextArr.push('dingin'); break
-                        case 'or': conditionTextArr.push('atau'); break
+                        case 'or': conditionTextArr.push('/'); break
                         case 'possible': conditionTextArr.push('(kemungkinan)'); break
                     }
                 }

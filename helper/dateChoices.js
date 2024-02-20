@@ -1,5 +1,8 @@
+const { indonesiaDate } = require("../src/reminder")
+
 function getNext3Weeks() {
-    const date = new Date()
+    const dateIDN = indonesiaDate().localeKR.replace(/\W\s/g, '-').split('.')[0]
+    const date = new Date(dateIDN)
     const dateObj = {
         year: date.getFullYear(),
         month: date.getMonth() + 1,
@@ -12,12 +15,12 @@ function getNext3Weeks() {
         // check month
         switch(dateObj.month) {
             // feb
-            case 1:
+            case 2:
                 dateIncrement(dateObj, 29)
                 break
             // april = 3; june = 5; sept = 8; nov = 10
             // 30 days per month
-            case 3: case 5: case 8: case 10:
+            case 4: case 6: case 9: case 11:
                 dateIncrement(dateObj, 30)
                 break
             // 31 days per month
