@@ -16,6 +16,8 @@ const bot = new Client({
 // log message when bot online
 bot.on('ready', (b) => {
     console.log(`${b.user.tag} is online at ${indonesiaDate().locale}`);
+    // set custom status (activity)
+    b.user.setActivity('/indog')
     // register commands
     regCommands()
     // send greeting message on morning, noon, afternoon, evening 
