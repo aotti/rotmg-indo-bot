@@ -1,5 +1,5 @@
 const { REST, Routes, ApplicationCommandOptionType } = require('discord.js');
-const getNext3Weeks = require('../helper/dateChoices');
+const { getNext3Weeks } = require('../helper/dateTime');
 const { weatherCityList } = require('../helper/weatherChoices');
 
 async function registerCommands() {

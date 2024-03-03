@@ -1,4 +1,32 @@
-const { indonesiaDate } = require("../src/reminder")
+// utc +7
+function indonesiaDate() {
+    const d = new Date()
+    // utc time
+    const localTime = d.getTime()
+    const localOffset = d.getTimezoneOffset() * 60_000
+    const utc = localTime + localOffset
+    // indonesia time
+    const indonesiaOffset = 7
+    const indonesiaTime = utc + (3_600_000 * indonesiaOffset)
+    const indonesiaNow = new Date(indonesiaTime)
+    return {locale: indonesiaNow.toLocaleString(), localeKR: indonesiaNow.toLocaleDateString('ko-KR')}
+}
+
+// convert am/pm time to 24 hours
+function convertTime12to24(time12h) {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+  
+    if (hours === '12') {
+      hours = '00';
+    }
+  
+    if (modifier === 'PM') {
+      hours = parseInt(hours, 10) + 12;
+    }
+  
+    return `${hours}:${minutes}`;
+}
 
 function getNext3Weeks() {
     const dateIDN = indonesiaDate().localeKR.replace(/\W\s/g, '-').split('.')[0]
@@ -59,4 +87,8 @@ function dateIncrement(tempDateObj, datesInOneMonth) {
     return tempDateObj
 }
 
-module.exports = getNext3Weeks
+module.exports = {
+    indonesiaDate,
+    convertTime12to24,
+    getNext3Weeks
+}
