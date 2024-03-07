@@ -381,12 +381,13 @@ function replyMessage(interact) {
                             );
                             resolve(insertDataRow(query))
                         })
-                        .then(result => {
+                        .then(async result => {
                             // check if the result is error / not found
                             if(resultHandler(interact, result)) return
                             // send reply after success insert data
                             const replyContent = setReplyContent('mabar', result.data[0])
-                            interact.reply({ content: replyContent, ephemeral: true })
+                            await interact.reply({ content: replyContent, ephemeral: true })
+                            await interact.followUp({ content: '*new mabar schedule added, run /mabar_check to see it* :eyes:' })
                         })
                     }
                     break

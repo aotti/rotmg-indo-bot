@@ -7,6 +7,7 @@ function greetingsReminder(bot) {
     const channel = bot.channels.fetch(process.env.GENERAL_CHANNEL)
     channel.then(async (result) => {
         const reminderEmojis = [
+            { name: 'sahur', emoji: ':sleeping:' },
             { name: 'subuh', emoji: ':yawning_face:' },
             { name: 'siang', emoji: ':face_exhaling:' },
             { name: 'sore', emoji: ':sweat:' },

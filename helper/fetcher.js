@@ -54,8 +54,8 @@ function fetcherReminder(url, options) {
             schedules: htmlText.match(/\d+\W\d+/g)
         }
         // other schedules
-        sholatObj.names.push('pagi', 'pingsan')
-        sholatObj.schedules.push('07:00', '22:00')
+        sholatObj.names.push('sahur', 'pagi', 'pingsan')
+        sholatObj.schedules.push('03:00', '07:00', '22:00')
         return sholatObj
     })
     .catch(err => console.log(`reminderAPI error: ${err}`))
