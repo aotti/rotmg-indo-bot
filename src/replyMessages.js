@@ -45,7 +45,7 @@ function setReplyContent(type, data) {
         "`title      :` " + data.title + "\n" +
         "`date(y-m-d):` " + data.date + "\n" +
         "`description:` " + data.description + "\n" +
-        "`status     :` " + data.status
+        "`status     :` " + data.status + ` (${data.reminder_time})`
         return contentBody
     }
 }
@@ -367,16 +367,17 @@ function replyMessage(interact) {
                     else {
                         // get player input value
                         const inputs = {
-                            title: interact.options.get('title').value.toLowerCase(),
-                            date: interact.options.get('date').value.toLowerCase(),
-                            description: interact.options.get('description')?.value.toLowerCase(),
+                            title: interact.options.get('title').value,
+                            date: interact.options.get('date').value,
+                            reminder_time: interact.options.get('reminder_time').value,
+                            description: interact.options.get('description')?.value,
                             // default value 
                             status: 'pending'
                         }
                         new Promise(resolve => {
                             // insert player query
                             const query = queryBuilder(
-                                'schedules', 4568, null, null, 
+                                'schedules', 456789, null, null, 
                                 { type: 'insert', obj: filterObjectValues(inputs) }
                             );
                             resolve(insertDataRow(query))
@@ -396,7 +397,7 @@ function replyMessage(interact) {
                     // start get all mabar schedules
                     new Promise(resolve => {
                         const inputStatus = interact.options.get('status').value.toLowerCase()
-                        const query = queryBuilder('schedules', 45678, 'status', inputStatus)
+                        const query = queryBuilder('schedules', 456789, 'status', inputStatus)
                         resolve(selectAll(query))
                     })
                     .then(result => {
@@ -430,12 +431,11 @@ function replyMessage(interact) {
                         // create multiple embeds
                         const scheduleToday = new Date().toLocaleDateString('en-us', {month: 'long', day: 'numeric'})
                         for(let i=0; i<embedPages; i++) {
-                            const checkScheduleStatus = scheduleObj['col_1'] ? 
-                                                        (scheduleObj['col_1'][0].status == 'pending' ?
-                                                        'List of pending mabar' : 'List of completed mabar') + 
-                                                        (`\n**Today:** ${scheduleToday}`)
-                                                        : 
-                                                        null
+                            const checkScheduleStatus = scheduleObj['col_1'] 
+                                                        ? (scheduleObj['col_1'][0].status == 'pending' 
+                                                            ? 'List of pending mabar' 
+                                                            : 'List of completed mabar') + (`\n**Today:** ${scheduleToday}`)
+                                                        : null
                             // create embed
                             const scheduleEmbed = new EmbedBuilder()
                                 .setTitle('Indog Mabar Schedules')
@@ -448,7 +448,8 @@ function replyMessage(interact) {
                                     title: 'empty slot :x:',
                                     date: '1999-1-1',
                                     description: null,
-                                    status: null
+                                    status: null,
+                                    reminder_time: null
                                 }
                                 // date.split('-')[1] = modified month number (date.getMonth() + 1) 
                                 // it has to parse to integer then -1 
@@ -464,7 +465,7 @@ function replyMessage(interact) {
                                     value: "`id     :` " + fieldValue.id +
                                     "\n`jadwal :` " + newDate.join('-') +
                                     "\n`ingfo  :` " + fieldValue.description +
-                                    "\n`status :` " + fieldValue.status,
+                                    "\n`status :` " + fieldValue.status + ` (${fieldValue.reminder_time})`,
                                     inline: true
                                 })
                             }
@@ -485,15 +486,16 @@ function replyMessage(interact) {
                         // get input value
                         const inputs = {
                             id: interact.options.get('id').value, // integer
-                            title: interact.options.get('title')?.value.toLowerCase(), // string
+                            title: interact.options.get('title')?.value, // string
                             date: interact.options.get('date')?.value, // date
+                            reminder_time: interact.options.get('reminder_time')?.value, // string
                             status: interact.options.get('status')?.value.toLowerCase(), // string
-                            description: interact.options.get('description')?.value.toLowerCase() // string
+                            description: interact.options.get('description')?.value // string
                         }
                         // start update data
                         new Promise(resolve => {
                             const query = queryBuilder(
-                                'schedules', 4568, 'id', inputs.id,
+                                'schedules', 45679, 'id', inputs.id,
                                 { type: 'update', obj: filterObjectValues(inputs) }
                             )
                             resolve(updateData(query))

@@ -2,18 +2,18 @@ const supabase = require('../database/database')
 
 function selectAll(query) {
     if(supabase == null)
-    return console.log('cannot connect to database');
+        return console.log('cannot connect to database');
     // get all data from supabase
     const selectAllDataFromDB = async () => {
         const columnOrder = query.orderBy || 'id'
         const {data, error} = query.whereColumn ? 
-                            // order by CUSTOM
+                            // with where clause
                             await supabase.from(query.table)
                             .select(query.selectColumn)
                             .eq(query.whereColumn, query.whereValue)
                             .order(columnOrder, {ascending: true})
                             :
-                            // order by ID
+                            // get all data
                             await supabase.from(query.table)
                             .select(query.selectColumn)
                             .order(columnOrder, {ascending: true})
@@ -87,9 +87,10 @@ function queryBuilder(table, selectColumn, whereColumn = null, whereValue = null
             case 4: choosenColumns.push('title'); break
             case 5: choosenColumns.push('date'); break
             case 6: choosenColumns.push('description'); break
+            case 7: choosenColumns.push('reminder_time'); break
             // both table have status column
-            case 7: choosenColumns.push('id'); break
-            case 8: choosenColumns.push('status'); break
+            case 8: choosenColumns.push('id'); break
+            case 9: choosenColumns.push('status'); break
         }
     }
     qb.selectColumn = choosenColumns.join(', ')

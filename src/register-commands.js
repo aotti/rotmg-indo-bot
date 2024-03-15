@@ -130,6 +130,18 @@ async function registerCommands() {
                         },
                         {
                             type: ApplicationCommandOptionType.String,
+                            name: 'reminder_time',
+                            description: 'when will the bot send reminder',
+                            required: true,
+                            choices: [
+                                { name: 'Pagi', value: 'pagi' },
+                                { name: 'Siang', value: 'siang' },
+                                { name: 'Sore', value: 'sore' },
+                                { name: 'Magrib', value: 'magrib' }
+                            ]
+                        },
+                        {
+                            type: ApplicationCommandOptionType.String,
                             name: 'description',
                             description: 'additional ingfo about the mabar'
                         }
@@ -166,6 +178,17 @@ async function registerCommands() {
                             name: 'date',
                             description: 'when will the mabar occur (yyyy-mm-dd)',
                             choices: getNext3Weeks()
+                        },
+                        {
+                            type: ApplicationCommandOptionType.String,
+                            name: 'reminder_time',
+                            description: 'when will the bot send reminder',
+                            choices: [
+                                { name: 'Pagi', value: 'pagi' },
+                                { name: 'Siang', value: 'siang' },
+                                { name: 'Sore', value: 'sore' },
+                                { name: 'Magrib', value: 'magrib' }
+                            ]
                         },
                         {
                             type: ApplicationCommandOptionType.String,

@@ -42,9 +42,9 @@ function greetingsReminder(bot) {
                 }
                 // currentHours === reminderHours (time)
                 if(currentHours === reminderHours) {
+                    // send mabar reminder once
+                    mabarReminder(bot, reminderResult.names[i])
                     if(currentHours === 7) {
-                        // send mabar reminder once
-                        mabarReminder(bot)
                         // register command to update mabar_set command date
                         regCommands()
                     }
@@ -75,21 +75,20 @@ function greetingsReminder(bot) {
 }
 
 // send notif when its the day for mabar
-function mabarReminder(bot) {
+function mabarReminder(bot, timeName) {
     const channel = bot.channels.fetch(process.env.GENERAL_CHANNEL)
-    channel.then(result => {
+    channel.then(async result => {
         // get all pending mabar
         const currentDate = indonesiaDate().localeKR.replace(/\W\s/g, '-').split('.')[0]
-        new Promise(resolve => {
-            const query = queryBuilder('schedules', 45678, ['date', 'status'], [currentDate, 'pending'])
-            // get data ascending by date
-            resolve(selectOne(query))
-        })
-        .then(payload => {
-            if(payload.data[0] == null) return
-            const { title, description } = payload.data[0]
-            result.send(`<@&496164930605547520>\nHari ini ada jadwal mabar **${title}**\nnote: ${description}`)
-        })
+        const query = queryBuilder('schedules', 45679, ['date', 'status'], [currentDate, 'pending'])
+        const mabarResponse = await selectOne(query)
+        // if data == null, do nothing
+        if(mabarResponse.data[0] == null) return console.log('mabar not found');
+        // mabar data retrieved
+        const { title, description, reminder_time } = mabarResponse.data[0]
+        // match current hour and reminder time
+        if(timeName === reminder_time)
+            await result.send(`<@&496164930605547520>\nHari ini ada jadwal mabar **${title}**\nnote: ${description}`)
     })
     .catch(err => console.log(err))
 }
