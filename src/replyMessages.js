@@ -169,7 +169,7 @@ function replyMessage(interact) {
                     // handle promise
                     new Promise(resolve => {
                         // get discord id
-                        const discordId = +interact.user.id
+                        const discordId = interact.user.id
                         // update object
                         const updateObj = { discord_id: '' }
                         // update query
@@ -181,7 +181,7 @@ function replyMessage(interact) {
                     })
                     .then(async result => {
                         // get discord id
-                        const discordId = +interact.user.id
+                        const discordId = interact.user.id
                         // check if the result is error / not found
                         if(resultHandler(interact, result, discordId)) return
                         // reply after success update
