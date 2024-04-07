@@ -8,7 +8,7 @@ function setReplyContent(type, data) {
     if(type === 'not found') {
         const contentType = data.username || data.id
         const contentBody = "~~                                               ~~\n" + 
-        `**${typeof contentType == 'string' ? 'Player' : 'Schedule'} Not Found** :warning:\n` +
+        `**${typeof contentType == 'string' ? 'Player' : 'Data'} Not Found** :warning:\n` +
         "~~                                               ~~\n" + 
         (typeof contentType == 'string' ? "`username :` " + contentType : "`id :` " + contentType )
         return contentBody
@@ -17,7 +17,7 @@ function setReplyContent(type, data) {
         const contentBody = "~~                                               ~~\n" + 
         "**Player Found** :white_check_mark:\n" +
         "~~                                               ~~\n" + 
-        "`username :` " + data.username + "\n" +
+        "`username :` " + data.username + ` **(${data.discord_username || 'not linked'})**` + "\n" +
         "`alias    :` " + data.alias + "\n" +
         "`region   :` " + data.region + "\n" +
         "`rank     :` " + data.rank + "\n" +
@@ -91,8 +91,8 @@ function filterObjectValues(obj) {
 
 function resultHandler(interact, result, userlookup = null) {
     // if result error
-    if(result.error !== null) {
-        interact.reply(JSON.stringify(result.error))
+    if(result.data === null) {
+        interact.reply({ content: JSON.stringify(result.error), flags: '4096' })
         return true
     }
     // if result success but data not found
@@ -111,28 +111,101 @@ function replyMessage(interact) {
     switch(interact.commandName) {
         case 'greetings':
             console.log(interact.member.nickname, '> starting greetings command');
-            const randReply = Math.round(Math.random()) === 1 ? 'kk lobster syuki 🥰' : 'kk lobster kirai <:tsundere:1186674638093295616>'
-            interact.reply(randReply)
+            const randReply = Math.round(Math.random()) === 1 
+                            ? 'kk lobster syuki 🥰' 
+                            : 'kk lobster kirai <:tsundere:1186674638093295616>'
+            interact.reply({ content: randReply })
             break
         // main command
         case 'indog':
             switch(interact.options.getSubcommand()) {
                 // sub command
+                case 'discord_link':
+                    console.log(interact.member.nickname, '> starting discord_link command');
+                    // handle promise
+                    new Promise(resolve => {
+                        // get discord id
+                        const discordId = interact.user.id
+                        // discord_id != null, check is discord_id already used or not
+                        const query = queryBuilder('players', 1, 'discord_id', discordId)
+                        resolve(selectOne(query))
+                    })
+                    .then(async result => {
+                        // discord_id found
+                        if(result.data.length !== 0 && result.data[0].discord_id !== null) {
+                            const replyContent = `your discord already linked to rotmg **${result.data[0].username}**` +
+                                                "\nrun **/discord_unlink** to remove it"
+                            await interact.reply({ content: replyContent, ephemeral: true })
+                        }
+                        // discord_id not found
+                        else {
+                            const inputUsername = interact.options.get('username').value.toLowerCase()
+                            // find username
+                            const usernameQuery = queryBuilder('players', 123, 'username', inputUsername)
+                            const selectResult = await selectOne(usernameQuery)
+                            // check if the result is error / not found
+                            if(resultHandler(interact, selectResult, inputUsername)) return
+                            // username found
+                            // update object
+                            const updateObj = { discord_id: interact.user.id }
+                            // update query
+                            const query = queryBuilder(
+                                'players', 123, 'username', inputUsername,
+                                { type: 'update', obj: filterObjectValues(updateObj) }
+                            )
+                            // update player data
+                            const updateResult = await updateData(query)
+                            // reply message
+                            const discordUsername = interact.member.nickname || interact.user.username
+                            await interact.reply({ 
+                                content: `RotMG **${updateResult.data[0].username}** linked to Discord **${discordUsername}**`, 
+                                ephemeral: true 
+                            })
+                        }
+                    })
+                    break
+                case 'discord_unlink':
+                    console.log(interact.member.nickname, '> starting discord_unlink command');
+                    // handle promise
+                    new Promise(resolve => {
+                        // get discord id
+                        const discordId = +interact.user.id
+                        // update object
+                        const updateObj = { discord_id: '' }
+                        // update query
+                        const query = queryBuilder(
+                            'players', 1, 'discord_id', discordId,
+                            { type: 'update', obj: filterObjectValues(updateObj) }
+                        )
+                        resolve(updateData(query))
+                    })
+                    .then(async result => {
+                        // get discord id
+                        const discordId = +interact.user.id
+                        // check if the result is error / not found
+                        if(resultHandler(interact, result, discordId)) return
+                        // reply after success update
+                        const replyContent = `your discord not linked to rotmg **${result.data[0].username}** anymore`
+                        await interact.reply({ content: replyContent, ephemeral: true })
+                    })
+                    break
                 case 'player_search':
-                    console.log(interact.member.nickname, '> starting search command');
-                    // get player input value
-                    const inputUsername = interact.options.get('username').value.toLowerCase()
+                    console.log(interact.member.nickname, '> starting player_search command');
                     // start search in database
                     new Promise(resolve => {
+                        // get player input value
+                        const inputUsername = interact.options.get('username').value.toLowerCase()
                         // find player query
                         const query = queryBuilder('players', 123, 'username', inputUsername)
                         resolve(selectOne(query))
                     })
                     .then(async result => {
+                        // get player input value
+                        const inputUsername = interact.options.get('username').value.toLowerCase()
                         // check if the result is error / not found
                         if(resultHandler(interact, result, inputUsername)) return
                         // waiting reply 
-                        interact.deferReply({ ephemeral: true })
+                        await interact.deferReply({ ephemeral: true })
                         // fetch options
                         const fetchOptions = {
                             method: 'GET',
@@ -141,21 +214,45 @@ function replyMessage(interact) {
                         // get realmeye api https://realmeye-api.glitch.me/player/[Player_Name]
                         const realmAPIEndpoint = `https://realmeye-api.glitch.me/player/${result.data[0].username}`
                         const realmAPIResult = await fetcherRealmEye(realmAPIEndpoint, fetchOptions)
-                        // merge data from db AND realm api
-                        const replyObj = {
-                            // data from api
-                            ...realmAPIResult,
-                            // data from db
-                            ...result.data[0]
+                        // get discord members
+                        const guildMembers = await interact.guild.members.list({ limit: 100 })
+                        for(let member of guildMembers) {
+                            // get anjay mabar role
+                            const getRole = member[1].roles.cache.get('496164930605547520')
+                            // find member with anjay mabar
+                            if(getRole != null) {
+                                const members = getRole.members.map(v => {
+                                    // filter member with BOT role
+                                    if(!v.roles.cache.get('587622073266995221')) {
+                                        const discordUsername = v.nickname || v.displayName
+                                        return { discord_id: v.id, discord_username: discordUsername }
+                                    }
+                                }).filter(i => i)
+                                // get discord username for selected player
+                                const selectedMember = members.map(v => { 
+                                    if(v.discord_id === result.data[0].discord_id) 
+                                        return v
+                                }).filter(i => i)[0]
+                                // merge data from db AND realm api
+                                const replyObj = {
+                                    // data from api
+                                    ...realmAPIResult,
+                                    // data from db
+                                    ...result.data[0],
+                                    // data from discord username
+                                    ...selectedMember
+                                }
+                                // set reply content
+                                const replyContent = setReplyContent('found', replyObj)
+                                // send reply message
+                                await interact.followUp({ content: replyContent, ephemeral: true })
+                                break
+                            }
                         }
-                        // set reply content
-                        const replyContent = setReplyContent('found', replyObj)
-                        // send reply message
-                        interact.followUp({ content: replyContent, ephemeral: true })
                     })
                     break
                 case 'player_all':
-                    console.log(interact.member.nickname, '> starting all_players command');
+                    console.log(interact.member.nickname, '> starting player_all command');
                     // start get all player data
                     new Promise(resolve => {
                         const query = queryBuilder('players', 1)
@@ -230,7 +327,7 @@ function replyMessage(interact) {
                     })
                     break
                 case 'player_insert':
-                    console.log(interact.member.nickname, '> starting insert command');
+                    console.log(interact.member.nickname, '> starting player_insert command');
                     // check if user is admin
                     if(checkAdmin(interact.user.id) === -1) {
                         // not admin
@@ -263,7 +360,7 @@ function replyMessage(interact) {
                     }
                     break
                 case 'player_edit':
-                    console.log(interact.member.nickname, '> starting edit command');
+                    console.log(interact.member.nickname, '> starting player_edit command');
                     // check if user is admin
                     if(checkAdmin(interact.user.id) === -1) {
                         // not admin
@@ -291,12 +388,12 @@ function replyMessage(interact) {
                             )
                             resolve(updateData(query))
                         })
-                        .then(result => {
+                        .then(async result => {
                             // check if the result is error / not found
                             if(resultHandler(interact, result, inputs.username)) return
                             // reply after success update
                             const replyContent = setReplyContent('edit', result.data[0])
-                            interact.reply({ content: replyContent, ephemeral: true })
+                            await interact.reply({ content: replyContent, ephemeral: true })
                         })
                     }
                     break
@@ -358,7 +455,7 @@ function replyMessage(interact) {
                     interact.reply({ embeds: [videoEmbed], ephemeral: true })
                     break
                 case 'mabar_set':
-                    console.log(interact.member.nickname, '> starting set_mabar command');
+                    console.log(interact.member.nickname, '> starting mabar_set command');
                     // check if user is admin
                     if(checkAdmin(interact.user.id) === -1) {
                         // not admin
@@ -393,7 +490,7 @@ function replyMessage(interact) {
                     }
                     break
                 case 'mabar_check':
-                    console.log(interact.member.nickname, '> starting check_mabar command');
+                    console.log(interact.member.nickname, '> starting mabar_check command');
                     // start get all mabar schedules
                     new Promise(resolve => {
                         const inputStatus = interact.options.get('status').value.toLowerCase()
@@ -477,7 +574,7 @@ function replyMessage(interact) {
                     })
                     break
                 case 'mabar_edit':
-                    console.log(interact.member.nickname, '> starting edit_mabar command');
+                    console.log(interact.member.nickname, '> starting mabar_edit command');
                     if(checkAdmin(interact.user.id) === -1) {
                         // not admin
                         return interact.reply({ content: 'Hanya **Admin** yang boleh menjalankan command ini.', ephemeral: true })

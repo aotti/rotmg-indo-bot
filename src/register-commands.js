@@ -12,6 +12,26 @@ async function registerCommands() {
             name: 'indog',
             description: 'player commands',
             options: [
+                // link discord to rotmg username
+                {
+                    type: ApplicationCommandOptionType.Subcommand,
+                    name: 'discord_link',
+                    description: 'link discord username to rotmg username',
+                    options: [
+                        {
+                            type: ApplicationCommandOptionType.String,
+                            name: 'username',
+                            description: 'your rotmg username',
+                            required: true
+                        }
+                    ]
+                },
+                // unlink discord to rotmg username
+                {
+                    type: ApplicationCommandOptionType.Subcommand,
+                    name: 'discord_unlink',
+                    description: 'unlink discord username from rotmg username'
+                },
                 // get all player
                 {
                     type: ApplicationCommandOptionType.Subcommand,

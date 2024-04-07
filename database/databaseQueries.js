@@ -80,7 +80,7 @@ function queryBuilder(table, selectColumn, whereColumn = null, whereValue = null
     for(let col of selectColumn.toString().split('')) {
         switch(+col) {
             // table players
-            case 1: choosenColumns.push('username'); break
+            case 1: choosenColumns.push('username, discord_id'); break
             case 2: choosenColumns.push('alias'); break
             case 3: choosenColumns.push('region'); break
             // table schedules
