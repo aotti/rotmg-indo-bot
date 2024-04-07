@@ -205,7 +205,11 @@ function replyMessage(interact) {
                         // check if the result is error / not found
                         if(resultHandler(interact, result, inputUsername)) return
                         // waiting reply 
-                        await interact.deferReply({ ephemeral: true })
+                        const inputDisplay = interact.options.get('display')?.value
+                        if(inputDisplay == null) 
+                            await interact.deferReply({ flags: '4096' })
+                        else 
+                            await interact.deferReply({ ephemeral: true })
                         // fetch options
                         const fetchOptions = {
                             method: 'GET',
@@ -245,7 +249,7 @@ function replyMessage(interact) {
                                 // set reply content
                                 const replyContent = setReplyContent('found', replyObj)
                                 // send reply message
-                                await interact.followUp({ content: replyContent, ephemeral: true })
+                                await interact.followUp({ content: replyContent })
                                 break
                             }
                         }

@@ -49,6 +49,14 @@ async function registerCommands() {
                             name: 'username',
                             description: 'player ingame name',
                             required: true
+                        },
+                        {
+                            type: ApplicationCommandOptionType.String,
+                            name: 'display',
+                            description: 'display the result for yourself',
+                            choices: [
+                                { name: 'Yes', value: 'hidden' }
+                            ]
                         }
                     ]
                 },
