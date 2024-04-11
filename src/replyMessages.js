@@ -1,7 +1,7 @@
 const { selectOne, insertDataRow, updateData, selectAll, queryBuilder } = require('../database/databaseQueries')
 const { EmbedBuilder } = require('discord.js')
 const { pagination, ButtonTypes, ButtonStyles } = require('@devraelfreeze/discordjs-pagination');
-const { fetcherRealmEye, fetcherManageRole, fetcherWeather } = require('../helper/fetcher');
+const { fetcherRealmEye, fetcherManageRole, fetcherWeather, fetcherNotLocal } = require('../helper/fetcher');
 const { weatherConditionTranslate, weatherFieldName, weatherPrecipitation } = require('../helper/weatherChoices');
 
 function setReplyContent(type, data) {
@@ -229,7 +229,10 @@ function replyMessage(interact) {
                                     // filter member with BOT role
                                     if(!v.roles.cache.get('587622073266995221')) {
                                         const discordUsername = v.nickname || v.displayName
-                                        return { discord_id: v.id, discord_username: discordUsername }
+                                        return { 
+                                            discord_id: v.id, 
+                                            discord_username: discordUsername 
+                                        }
                                     }
                                 }).filter(i => i)
                                 // get discord username for selected player
@@ -328,6 +331,64 @@ function replyMessage(interact) {
                         }
                         // send reply message with pagination
                         replyPagination(interact, embedArray)
+                    })
+                    break
+                case 'player_notlocal':
+                    console.log(interact.member.nickname, '> starting player_notlocal command');
+                    new Promise(async resolve => {
+                        const afterQuery = 'after=1227861247068864602'
+                        const limitQuery = 'limit=10'
+                        const getMessagesURL = `https://discord.com/api/v10/channels/${process.env.NOT_LOCAL_CHANNEL}/messages?${afterQuery}&${limitQuery}`
+                        const fetchOptions = {
+                            method: 'GET',
+                            headers: {
+                                Authorization: `Bot ${process.env.TOKEN}`
+                            }
+                        }
+                        const getNotLocalMessages = await fetcherNotLocal(getMessagesURL, fetchOptions)
+                        // filter messages content length
+                        const filteredNotLocalMessages = []
+                        for(let message of getNotLocalMessages) {
+                            if(message.content.length <= 15) {
+                                const notLocalPlayer = {
+                                    discord_id: message.author.id,
+                                    discord_username: null,
+                                    rotmg_username: message.content 
+                                }
+                                filteredNotLocalMessages.push(notLocalPlayer)
+                            }
+                        }
+                        // get discord members
+                        const guildMembers = await interact.guild.members.list({ limit: 100 })
+                        for(let member of guildMembers) {
+                            const matchMemberWithNotLocal = filteredNotLocalMessages.map(v => v.discord_id).indexOf(member[1].user.id)
+                            if(matchMemberWithNotLocal !== -1) {
+                                const index = matchMemberWithNotLocal
+                                filteredNotLocalMessages[index].discord_username = member[1].nickname || member[1].displayName
+                            } 
+                        }
+                        resolve(filteredNotLocalMessages)
+                    })
+                    .then(async result => {
+                        // create embed
+                        const notLocalDescription = `rotmg username is based on user input 
+                                                    if it doesnt match in-game, he must be a ballsac
+                                                    ───────────────────
+                                                    ~ **rotmg username**
+                                                    ~ discord username`
+                        const notLocalEmbed = new EmbedBuilder()
+                            .setTitle('Not Local Players')
+                            .setDescription(notLocalDescription)
+                        // add fields
+                        for(let res of result) {
+                            notLocalEmbed.addFields({
+                                name: res.rotmg_username,
+                                value: res.discord_username,
+                                inline: true
+                            })
+                        }
+                        // reply message
+                        await interact.reply({ embeds: [notLocalEmbed], flags: '4096' })
                     })
                     break
                 case 'player_insert':

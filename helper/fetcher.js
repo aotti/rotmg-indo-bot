@@ -34,6 +34,12 @@ function fetcherRealmEye(url, options, singleData = true) {
     .catch(err => console.log(`realmeyeAPI error: ${err}`))
 }
 
+function fetcherNotLocal(url, options) {
+    return fetch(url, options)
+    .then(data => data.json())
+    .then(result => { return result })
+}
+
 function fetcherManageRole(url, options) {
     return fetch(url, options)
     .then(data => { return data.status === 204 })
@@ -131,6 +137,7 @@ function fetcherWeather(url, options, type) {
 
 module.exports = {
     fetcherRealmEye,
+    fetcherNotLocal,
     fetcherManageRole,
     fetcherReminder,
     fetcherWeather

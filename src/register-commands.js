@@ -60,6 +60,11 @@ async function registerCommands() {
                         }
                     ]
                 },
+                {
+                    type: ApplicationCommandOptionType.Subcommand,
+                    name: 'player_notlocal',
+                    description: 'get all not local players 💀'
+                },
                 // insert new player
                 {
                     type: ApplicationCommandOptionType.Subcommand,

@@ -5,7 +5,7 @@ const regCommands = require('./register-commands')
 
 function greetingsReminder(bot) {
     const channel = bot.channels.fetch(process.env.GENERAL_CHANNEL)
-    channel.then(async (result) => {
+    channel.then(async result => {
         const reminderEmojis = [
             { name: 'sahur', emoji: ':sleeping:' },
             { name: 'subuh', emoji: ':yawning_face:' },
@@ -16,7 +16,7 @@ function greetingsReminder(bot) {
             { name: 'pagi', emoji: ':expressionless:' },
             { name: 'pingsan', emoji: ':sleeping:' }
         ]
-        const reminderEndpoint = 'https://www.jadwalsholat.org/adzan/ajax/ajax.daily1.php?id=308'
+        const reminderEndpoint = 'https://www.jadwalsholat.org/adzan/ajax/ajax.daily1.php'
         const fetchOptions = {
             method: 'GET'
         }
@@ -83,7 +83,7 @@ function mabarReminder(bot, timeName) {
         const query = queryBuilder('schedules', 45679, ['date', 'status'], [currentDate, 'pending'])
         const mabarResponse = await selectOne(query)
         // if data == null, do nothing
-        if(mabarResponse.data[0] == null) return console.log('mabar not found');
+        if(mabarResponse.data[0] == null) return 
         // mabar data retrieved
         const { title, description, reminder_time } = mabarResponse.data[0]
         // match current hour and reminder time
