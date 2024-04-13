@@ -16,7 +16,7 @@ function greetingsReminder(bot) {
             { name: 'pagi', emoji: ':expressionless:' },
             { name: 'pingsan', emoji: ':sleeping:' }
         ]
-        const reminderEndpoint = 'https://www.jadwalsholat.org/adzan/ajax/ajax.daily1.php'
+        const reminderEndpoint = 'https://jadwalsholat.org/jadwal-sholat/daily.php?id=308'
         const fetchOptions = {
             method: 'GET'
         }

@@ -54,14 +54,19 @@ function fetcherReminder(url, options) {
         const sholatNamesAlt = ['subuh', 'siang', 'sore', 'magrib', 'isya']
         // sholat schedules
         const sholatObj = {
-            names: htmlText.match(sholatNamesRegex).map((v, i) => { 
-                    return v.replace(v, sholatNamesAlt[i]) 
-                }),
-            schedules: htmlText.match(/\d+\W\d+/g)
+            names: htmlText.match(sholatNamesRegex).map((v, i) => {
+                    const sholatName = v.replace(v, sholatNamesAlt[i]) 
+                    if(sholatName != 'undefined') return sholatName
+                }).filter(i=>i),
+            schedules: htmlText.match(/\d+:\d+/g)
         }
+        // remove imsyak, terbit, dhuha
+        sholatObj.schedules.splice(0, 1)
+        sholatObj.schedules.splice(1, 1)
+        sholatObj.schedules.splice(1, 1)
         // other schedules
-        sholatObj.names.push('sahur', 'pagi', 'pingsan')
-        sholatObj.schedules.push('03:00', '07:00', '22:00')
+        sholatObj.names.push('pagi', 'pingsan')
+        sholatObj.schedules.push('07:00', '22:00')
         return sholatObj
     })
     .catch(err => console.log(`reminderAPI error: ${err}`))
