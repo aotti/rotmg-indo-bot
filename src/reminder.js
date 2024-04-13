@@ -76,7 +76,7 @@ function greetingsReminder(bot) {
 
 // send notif when its the day for mabar
 function mabarReminder(bot, timeName) {
-    const channel = bot.channels.fetch(process.env.GENERAL_CHANNEL)
+    const channel = bot.channels.fetch(process.env.INDOG_EVENT_CHANNEL)
     channel.then(async result => {
         // get all pending mabar
         const currentDate = indonesiaDate().localeKR.replace(/\W\s/g, '-').split('.')[0]
