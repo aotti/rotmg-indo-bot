@@ -37,8 +37,8 @@ function greetingsReminder(bot) {
                 const reminderHours = +scheduleMinutes <= 30 ? +scheduleHours : +scheduleHours + 1
                 // -1 hour before the actual reminder & only run when interval === 1 hour
                 if(currentHours === (reminderHours - 1) && interval === 3_600_000) {
-                    // restart the loop with 25mins interval
-                    return restartInterval(900_000)
+                    // restart the loop with 14mins interval
+                    return restartInterval(840_000)
                 }
                 // currentHours === reminderHours (time)
                 if(currentHours === reminderHours) {
