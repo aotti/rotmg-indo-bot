@@ -146,6 +146,19 @@ function replyMessage(interact) {
                             // check if the result is error / not found
                             if(resultHandler(interact, selectResult, inputUsername)) return
                             // username found
+                            // check if the username already linked
+                            // if value is not null, must be string
+                            if(selectResult.data[0].discord_id !== null) {
+                                // if value string, must have length
+                                if(selectResult.data[0].discord_id.length !== 0) {
+                                    // string length isnt 0, dont overwrite the value
+                                    return await interact.reply({ 
+                                        content: 'this username already linked to another discord account', 
+                                        ephemeral: true 
+                                    })
+                                }
+                            }
+                            // username doesnt linked to anything
                             // update object
                             const updateObj = { discord_id: interact.user.id }
                             // update query
