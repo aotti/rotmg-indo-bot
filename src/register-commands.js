@@ -272,9 +272,12 @@ async function registerCommands() {
                             ]
                         },
                         {
-                            type: ApplicationCommandOptionType.Boolean,
+                            type: ApplicationCommandOptionType.String,
                             name: 'display',
-                            description: 'display normal message (false) / dismiss-able (true) (ADMIN ONLY)'
+                            description: 'display for everyone',
+                            choices: [
+                                { name: 'Yes', value: 'yes' }
+                            ]
                         }
                     ]
                 }

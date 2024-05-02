@@ -300,6 +300,8 @@ function replyMessage(interact) {
                         }
                         // get all active players
                         const activePlayers = playersArr.map(v => { return v.match('aktif') }).filter(i => i).length
+                        // get all linked players
+                        const linkedPlayers = result.data.map(v => v.discord_id && v.discord_id.length > 0).filter(i => i).length
                         // slice materials
                         // how many columns to make
                         const sliceLoops = Math.ceil(playersArr.length / 5) 
@@ -326,13 +328,13 @@ function replyMessage(interact) {
                         for(let i=0; i<embedPages; i++) {
                             const embedContent = new EmbedBuilder()
                                 .setTitle('Indog Player List')
-                                .setDescription(`total: ${playersArr.length} | aktif: ${activePlayers}`)
+                                .setDescription(`total: ${playersArr.length} | aktif: ${activePlayers} | linked: ${linkedPlayers}`)
                             // create fields (2x loops = 2 fields)
                             for(let j=0; j<embedFields; j++) {
                                 const fieldValue = Object.values(playersObj)
                                 embedContent.addFields({ 
                                     // set field title every multiple of embedFiels
-                                    name: embedCounter % embedFields === 0 ? `Username [status]` : '** **', 
+                                    name: embedCounter % embedFields === 0 ? `[status] Username` : '** **', 
                                     value: fieldValue[embedCounter] != null ? fieldValue[embedCounter].join('\n') : '** **', 
                                     inline: true 
                                 })
@@ -750,12 +752,7 @@ function replyMessage(interact) {
                     // user input
                     const inputCity = interact.options.get('city').value
                     const inputType = interact.options.get('type').value
-                    const inputDisplay = () => {
-                        if(interact.options.get('display'))
-                            return interact.options.get('display').value
-                        else 
-                            return null
-                    }
+                    const inputDisplay = interact.options.get('display').value || null
                     // fetch materials
                     const weatherParams = {
                         type: inputType,
@@ -826,19 +823,14 @@ function replyMessage(interact) {
                             })
                         }
                         // send reply
-                        // reply for member only
-                        if(inputDisplay() === null) {
+                        // reply with ephemeral
+                        if(inputDisplay === null) {
                             const weatherEmbeds = [weatherPerDayEmbed, weatherPerHourEmbed]
                             replyPagination(interact, weatherEmbeds)
                         }
-                        // reply if admin input value on 'display' option
+                        // reply for everyone
                         else {
-                            // check if user is admin
-                            if(checkAdmin(interact.user.id) === -1) {
-                                // not admin
-                                return interact.reply({ content: 'Hanya **Admin** yang boleh menjalankan command ini.', ephemeral: true })
-                            }
-                            return interact.reply({ embeds: [weatherPerDayEmbed], ephemeral: inputDisplay() })
+                            return interact.reply({ embeds: [weatherPerDayEmbed] })
                         }
                     })
                     break
