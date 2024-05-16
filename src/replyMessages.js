@@ -752,7 +752,7 @@ function replyMessage(interact) {
                     // user input
                     const inputCity = interact.options.get('city').value
                     const inputType = interact.options.get('type').value
-                    const inputDisplay = interact.options.get('display').value || null
+                    const inputDisplay = interact.options.get('display')?.value || null
                     // fetch materials
                     const weatherParams = {
                         type: inputType,

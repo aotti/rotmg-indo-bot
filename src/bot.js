@@ -35,5 +35,16 @@ bot.on('interactionCreate', async (interact) => {
     replyMessage(interact)
 })
 
+// member join notif
+bot.on('guildMemberAdd', (b) => {
+    b.guild.channels.cache.get(process.env.GENERAL_CHANNEL).send('ada yg joinan gays :eyes:')
+})
+
+// member leave notif
+bot.on('guildMemberRemove', (b) => {
+    const username = b.nickname || b.displayName
+    b.guild.channels.cache.get(process.env.GENERAL_CHANNEL).send(`si **${username}** leave gays :skull:`)
+})
+
 // make bot comes online
 bot.login(process.env.TOKEN)
