@@ -60,6 +60,7 @@ async function registerCommands() {
                         }
                     ]
                 },
+                // get not local players
                 {
                     type: ApplicationCommandOptionType.Subcommand,
                     name: 'player_notlocal',
@@ -117,12 +118,6 @@ async function registerCommands() {
                             description: 'ganti ingame name'
                         }
                     ]
-                },
-                // mabar video
-                {
-                    type: ApplicationCommandOptionType.Subcommand,
-                    name: 'mabar_video',
-                    description: 'indog rotmeg mabar videos'
                 },
                 // get all mabar schedules
                 {

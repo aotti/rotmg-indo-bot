@@ -18,6 +18,7 @@ const bot = new Client({
 bot.on('ready', (b) => {
     console.log(`${b.user.tag} is online at ${indonesiaDate().locale}`);
     // set custom status (activity)
+    b.user.setActivity('/indog')
     setInterval(() => {
         b.user.setActivity('/indog')
     }, 3_600_000);
