@@ -7,7 +7,7 @@ const PlayerCommands = require('./classes/PlayerCommands');
 const MabarCommands = require('./classes/MabarCommands');
 const MiscCommands = require('./classes/MiscCommands');
 
-function replyMessage(interact) {
+async function replyMessage(interact) {
     const discordCommands = new DiscordCommands(interact)
     const playerCommands = new PlayerCommands(interact)
     const mabarCommands = new MabarCommands(interact)
@@ -16,10 +16,15 @@ function replyMessage(interact) {
     switch(interact.commandName) {
         case 'greetings':
             console.log(interact.member.nickname, '> starting greetings command');
-            const randReply = Math.round(Math.random()) === 1 
-                            ? 'kk lobster syuki 🥰' 
-                            : 'kk lobster kirai <:tsundere:1186674638093295616>'
-            interact.reply({ content: randReply })
+            try {
+                const randReply = Math.round(Math.random()) === 1 
+                                ? 'kk lobster syuki 🥰' 
+                                : 'kk lobster kirai <:tsundere:1186674638093295616>'
+                await interact.reply({ content: randReply })
+            } catch (error) {
+                console.log(error);
+                await fetcherWebhook(JSON.stringify(error))
+            }
             break
         // main command
         case 'indog':

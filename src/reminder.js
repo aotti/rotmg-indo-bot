@@ -3,9 +3,9 @@ const { indonesiaDate, convertTime12to24 } = require("../helper/dateTime");
 const { fetcherReminder } = require("../helper/fetcher");
 const regCommands = require('./register-commands')
 
-function greetingsReminder(bot) {
-    const channel = bot.channels.fetch(process.env.GENERAL_CHANNEL)
-    channel.then(async result => {
+async function greetingsReminder(bot) {
+    try {
+        const channel = await bot.channels.fetch(process.env.GENERAL_CHANNEL)
         const reminderEmojis = [
             { name: 'sahur', emoji: ':sleeping:' },
             { name: 'subuh', emoji: ':yawning_face:' },
@@ -25,7 +25,7 @@ function greetingsReminder(bot) {
         // send message ONCE PER DAY based on scheduled time
         let interval = 3_600_000 // 25mins = 1_500_000, 30mins = 1_800_000, 60mins = 3_600_000
         let startInterval = setInterval(() => { reminderInterval() }, interval);
-        function reminderInterval() {
+        async function reminderInterval() {
             // get current time 
             const currentTime = indonesiaDate().locale.split(' ').slice(1).join(' ')
             // get only the hours 
@@ -50,11 +50,17 @@ function greetingsReminder(bot) {
                     }
                     // message
                     const wawanRole = '<@&1185102820769280091>'
+                    // pagi / pingsan time
+                    const komariGIF = reminderResult.names[i] == 'pagi' 
+                                        ? 'https://tenor.com/b6iqmZt0yYD.gif'
+                                        : reminderResult.names[i] == 'pingsan'
+                                            ? 'https://tenor.com/ti1FOaBMIK3.gif'
+                                            : ''
                     // split the time (07:00) > get the hour > parse it to number > get the array index
                     const emojiIndex = reminderEmojis.map(v => { return v.name }).indexOf(reminderResult.names[i])
-                    const reminderMessage = `${wawanRole}\nselamat ${reminderResult.names[i]}, bang ${reminderEmojis[emojiIndex].emoji}`
+                    const reminderMessage = `${wawanRole}\nselamat ${reminderResult.names[i]}, bang ${reminderEmojis[emojiIndex].emoji}\n${komariGIF}`
                     // send message
-                    result.send(reminderMessage)
+                    await channel.send(reminderMessage)
                     // restart the loop with 1 hour interval
                     console.log(currentTime, reminderResult.names[i]);
                     return restartInterval(3_600_000)
@@ -70,14 +76,16 @@ function greetingsReminder(bot) {
             // re-start the looping
             startInterval = setInterval(() => { reminderInterval() }, interval);
         }
-    })
-    .catch(err => console.log(err))
+    } catch (error) {
+            console.log(error);
+            await fetcherWebhook(JSON.stringify(error))
+    }
 }
 
 // send notif when its the day for mabar
-function mabarReminder(bot, timeName) {
-    const channel = bot.channels.fetch(process.env.INDOG_EVENT_CHANNEL)
-    channel.then(async result => {
+async function mabarReminder(bot, timeName) {
+    try {
+        const channel = await bot.channels.fetch(process.env.INDOG_EVENT_CHANNEL)
         // get all pending mabar
         const currentDate = indonesiaDate().localeKR.replace(/\W\s/g, '-').split('.')[0]
         const query = queryBuilder('schedules', 45679, ['date', 'status'], [currentDate, 'pending'])
@@ -88,9 +96,11 @@ function mabarReminder(bot, timeName) {
         const { title, description, reminder_time } = mabarResponse.data[0]
         // match current hour and reminder time
         if(timeName === reminder_time)
-            await result.send(`<@&496164930605547520>\nHari ini ada jadwal mabar **${title}**\nnote: ${description}`)
-    })
-    .catch(err => console.log(err))
+            await channel.send(`<@&496164930605547520>\nHari ini ada jadwal mabar **${title}**\nnote: ${description}`)
+    } catch (error) {
+            console.log(error);
+            await fetcherWebhook(JSON.stringify(error))
+    }
 }
 
 module.exports = {

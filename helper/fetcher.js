@@ -46,6 +46,21 @@ function fetcherManageRole(url, options) {
     .catch(err => console.log(`manageRoleAPI error: ${err}`))
 }
 
+function fetcherWebhook(errorMessage) {
+    const url = process.env.BOTHOOK_URL
+    const options = {
+        method: 'POST',
+        headers: {
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+            content: `command error: ${errorMessage}`
+        })
+    }
+    return fetch(url, options)
+    .catch(err => console.log(`webhook error: ${err}`))
+}
+
 function fetcherReminder(url, options) {
     return fetch(url, options)
     .then(data => { return data.text() })
@@ -144,6 +159,7 @@ module.exports = {
     fetcherRealmEye,
     fetcherNotLocal,
     fetcherManageRole,
+    fetcherWebhook,
     fetcherReminder,
     fetcherWeather
 }

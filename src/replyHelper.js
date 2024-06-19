@@ -85,21 +85,26 @@ function filterObjectValues(obj) {
     return tempObj
 }
 
-function resultHandler(interact, result, userlookup = null) {
-    // if result error
-    if(result.data === null) {
-        interact.reply({ content: JSON.stringify(result.error), flags: '4096' })
-        return true
+async function resultHandler(interact, result, userlookup = null) {
+    try {
+        // if result error
+        if(result.data === null) {
+            await interact.reply({ content: JSON.stringify(result.error), flags: '4096' })
+            return true
+        }
+        // if result success but data not found
+        else if(result.data.length === 0) {
+            // set reply message
+            const replyContent = setReplyContent('not found', {username: userlookup})
+            await interact.reply({ content: replyContent, ephemeral: true })
+            return true
+        }
+        // if data found, return false
+        return false
+    } catch (error) {
+        console.log(error);
+        await fetcherWebhook(JSON.stringify(error))
     }
-    // if result success but data not found
-    else if(result.data.length === 0) {
-        // set reply message
-        const replyContent = setReplyContent('not found', {username: userlookup})
-        interact.reply({ content: replyContent, ephemeral: true })
-        return true
-    }
-    // if data found, return false
-    return false
 }
 
 module.exports = {
