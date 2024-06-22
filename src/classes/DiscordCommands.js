@@ -60,7 +60,7 @@ class DiscordCommands {
             }
         } catch (error) {
             console.log(error);
-            await fetcherWebhook(JSON.stringify(error))
+            await fetcherWebhook(this.interact.commandName, error)
         }
     }
 
@@ -84,7 +84,7 @@ class DiscordCommands {
             await this.interact.reply({ content: replyContent, ephemeral: true })
         } catch (error) {
             console.log(error);
-            await fetcherWebhook(JSON.stringify(error))
+            await fetcherWebhook(this.interact.commandName, error)
         }
     }
 }

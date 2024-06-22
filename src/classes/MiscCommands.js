@@ -74,7 +74,7 @@ class MiscCommands {
                 }
             } catch (error) {
                 console.log(error);
-                await fetcherWebhook(JSON.stringify(error))
+                await fetcherWebhook(this.interact.commandName, error)
             }
         }
     }
@@ -166,7 +166,7 @@ class MiscCommands {
             }
         } catch (error) {
             console.log(error);
-            await fetcherWebhook(JSON.stringify(error))
+            await fetcherWebhook(this.interact.commandName, error)
         }
     }
 }

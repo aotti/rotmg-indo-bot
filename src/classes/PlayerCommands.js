@@ -82,7 +82,7 @@ class PlayerCommands {
             await replyPagination(this.interact, embedArray)
         } catch (error) {
             console.log(error);
-            await fetcherWebhook(JSON.stringify(error))
+            await fetcherWebhook(this.interact.commandName, error)
         }
     }
 
@@ -132,6 +132,8 @@ class PlayerCommands {
                         if(v.discord_id === selectQuery.data[0].discord_id) 
                             return v
                     }).filter(i => i)[0]
+                    // prevent replacing username from realm api
+                    delete selectQuery.data[0].username
                     // merge data from db AND realm api
                     const replyObj = {
                         // data from api
@@ -150,7 +152,7 @@ class PlayerCommands {
             }
         } catch (error) {
             console.log(error);
-            await fetcherWebhook(JSON.stringify(error))
+            await fetcherWebhook(this.interact.commandName, error)
         }
     }
 
@@ -211,7 +213,7 @@ class PlayerCommands {
             await this.interact.reply({ embeds: [notLocalEmbed], flags: '4096' })
         } catch (error) {
             console.log(error);
-            await fetcherWebhook(JSON.stringify(error))
+            await fetcherWebhook(this.interact.commandName, error)
         }
     }
 
@@ -245,7 +247,7 @@ class PlayerCommands {
             }
         } catch (error) {
             console.log(error);
-            await fetcherWebhook(JSON.stringify(error))
+            await fetcherWebhook(this.interact.commandName, error)
         }
     }
 
@@ -284,7 +286,7 @@ class PlayerCommands {
             }
         } catch (error) {
             console.log(error);
-            await fetcherWebhook(JSON.stringify(error))
+            await fetcherWebhook(this.interact.commandName, error)
         }
     }
 }

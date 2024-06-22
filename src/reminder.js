@@ -78,7 +78,7 @@ async function greetingsReminder(bot) {
         }
     } catch (error) {
             console.log(error);
-            await fetcherWebhook(JSON.stringify(error))
+            await fetcherWebhook('reminder greetings', error)
     }
 }
 
@@ -99,7 +99,7 @@ async function mabarReminder(bot, timeName) {
             await channel.send(`<@&496164930605547520>\nHari ini ada jadwal mabar **${title}**\nnote: ${description}`)
     } catch (error) {
             console.log(error);
-            await fetcherWebhook(JSON.stringify(error))
+            await fetcherWebhook('reminder mabar', error)
     }
 }
 

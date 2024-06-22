@@ -103,7 +103,7 @@ async function resultHandler(interact, result, userlookup = null) {
         return false
     } catch (error) {
         console.log(error);
-        await fetcherWebhook(JSON.stringify(error))
+        await fetcherWebhook(`resultHandler-${this.interact.commandName}`, error)
     }
 }
 

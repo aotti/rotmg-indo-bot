@@ -23,7 +23,7 @@ async function replyMessage(interact) {
                 await interact.reply({ content: randReply })
             } catch (error) {
                 console.log(error);
-                await fetcherWebhook(JSON.stringify(error))
+                await fetcherWebhook(this.interact.commandName, error)
             }
             break
         // main command

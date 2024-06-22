@@ -89,7 +89,7 @@ class MabarCommands {
             await replyPagination(this.interact, embedArray)
         } catch (error) {
             console.log(error);
-            await fetcherWebhook(JSON.stringify(error))
+            await fetcherWebhook(this.interact.commandName, error)
         }
     }
 
@@ -126,7 +126,7 @@ class MabarCommands {
             }
         } catch (error) {
             console.log(error);
-            await fetcherWebhook(JSON.stringify(error))
+            await fetcherWebhook(this.interact.commandName, error)
         }
     }
 
@@ -161,7 +161,7 @@ class MabarCommands {
             }
         } catch (error) {
             console.log(error);
-            await fetcherWebhook(JSON.stringify(error))
+            await fetcherWebhook(this.interact.commandName, error)
         }
     }
 }

@@ -46,15 +46,21 @@ function fetcherManageRole(url, options) {
     .catch(err => console.log(`manageRoleAPI error: ${err}`))
 }
 
-function fetcherWebhook(errorMessage) {
+function fetcherWebhook(errorCommand, errorMessage) {
     const url = process.env.BOTHOOK_URL
+    // error content
+    const errorContent = {
+        bot: 'anu wawan',
+        command: errorCommand,
+        error: errorMessage
+    }
     const options = {
         method: 'POST',
         headers: {
             'content-type': 'application/json'
         },
         body: JSON.stringify({
-            content: `command error: ${errorMessage}`
+            content: errorContent
         })
     }
     return fetch(url, options)
