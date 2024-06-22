@@ -14,7 +14,7 @@ class PlayerCommands {
             // get all player data
             const selectQuery = await selectAll(query)
             // check if the result is error / not found
-            if(resultHandler(this.interact, selectQuery)) return
+            if(await resultHandler(this.interact, selectQuery)) return
             // defer message until the fetch done
             await this.interact.deferReply({ ephemeral: true })
             // players container
@@ -95,7 +95,7 @@ class PlayerCommands {
             // get data
             const selectQuery = await selectOne(query)
             // check if the result is error / not found
-            if(resultHandler(this.interact, selectQuery, inputUsername)) return
+            if(await resultHandler(this.interact, selectQuery, inputUsername)) return
             // waiting reply 
             const inputDisplay = this.interact.options.get('display')?.value
             if(inputDisplay == null) 
@@ -238,7 +238,7 @@ class PlayerCommands {
                 // insert data
                 const insertQuery = await insertDataRow(query)
                 // check if the result is error / not found
-                if(resultHandler(this.interact, insertQuery)) return
+                if(await resultHandler(this.interact, insertQuery)) return
                 // send reply after success insert data
                 const replyContent = setReplyContent('insert', insertQuery.data[0])
                 await this.interact.reply({ content: replyContent, ephemeral: true })
@@ -277,7 +277,7 @@ class PlayerCommands {
                 // update data
                 const updateQuery = await updateData(query)
                 // check if the result is error / not found
-                if(resultHandler(this.interact, updateQuery, inputs.username)) return
+                if(await resultHandler(this.interact, updateQuery, inputs.username)) return
                 // reply after success update
                 const replyContent = setReplyContent('edit', updateQuery.data[0])
                 await this.interact.reply({ content: replyContent, ephemeral: true })

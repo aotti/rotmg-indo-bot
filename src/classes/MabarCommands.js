@@ -118,7 +118,7 @@ class MabarCommands {
                 // insert data
                 const insertQuery = await insertDataRow(query)
                 // check if the result is error / not found
-                if(resultHandler(this.interact, insertQuery)) return
+                if(await resultHandler(this.interact, insertQuery)) return
                 // send reply after success insert data
                 const replyContent = setReplyContent('mabar', insertQuery.data[0])
                 await this.interact.reply({ content: replyContent, ephemeral: true })
@@ -154,7 +154,7 @@ class MabarCommands {
                 // update data
                 const updateQuery = await updateData(query)
                 // check if the result is error / not found
-                if(resultHandler(this.interact, updateQuery, inputs.id)) return
+                if(await resultHandler(this.interact, updateQuery, inputs.id)) return
                 // reply after success update
                 const replyContent = setReplyContent('edit_mabar', updateQuery.data[0])
                 await this.interact.reply({ content: replyContent, ephemeral: true })

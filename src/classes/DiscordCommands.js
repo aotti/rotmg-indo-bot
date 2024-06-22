@@ -27,7 +27,7 @@ class DiscordCommands {
                 const usernameQuery = queryBuilder('players', 123, 'username', inputUsername)
                 const selectResult = await selectOne(usernameQuery)
                 // check if the result is error / not found
-                if(resultHandler(this.interact, selectResult, inputUsername)) return
+                if(await resultHandler(this.interact, selectResult, inputUsername)) return
                 // username found
                 // check if the username already linked
                 // if value is not null, must be string
@@ -78,7 +78,7 @@ class DiscordCommands {
             // update data
             const updateQuery = await updateData(query)
             // check if the result is error / not found
-            if(resultHandler(this.interact, updateQuery, discordId)) return
+            if(await resultHandler(this.interact, updateQuery, discordId)) return
             // reply after success update
             const replyContent = `your discord not linked to rotmg **${updateQuery.data[0].username}** anymore`
             await this.interact.reply({ content: replyContent, ephemeral: true })
