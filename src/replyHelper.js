@@ -1,4 +1,5 @@
 const { pagination, ButtonTypes, ButtonStyles } = require('@devraelfreeze/discordjs-pagination');
+const { fetcherWebhook } = require('../helper/fetcher');
 
 function setReplyContent(type, data) {
     if(type === 'not found') {
