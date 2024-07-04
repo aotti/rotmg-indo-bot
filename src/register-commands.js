@@ -60,6 +60,28 @@ async function registerCommands() {
                         }
                     ]
                 },
+                // get player graveyards
+                {
+                    type: ApplicationCommandOptionType.Subcommand,
+                    name: 'player_deaths',
+                    description: 'get player graveyards if exist (may take 1-2 min)',
+                    options: [
+                        {
+                            type: ApplicationCommandOptionType.String,
+                            name: 'username',
+                            description: 'player ingame name',
+                            required: true
+                        },
+                        {
+                            type: ApplicationCommandOptionType.String,
+                            name: 'display',
+                            description: 'display the result for yourself',
+                            choices: [
+                                { name: 'Yes', value: 'hidden' }
+                            ]
+                        }
+                    ]
+                },
                 // get not local players
                 {
                     type: ApplicationCommandOptionType.Subcommand,

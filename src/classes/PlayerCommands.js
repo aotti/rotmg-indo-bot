@@ -132,8 +132,8 @@ class PlayerCommands {
                         if(v.discord_id === selectQuery.data[0].discord_id) 
                             return v
                     }).filter(i => i)[0]
-                    // prevent replacing username from realm api
-                    delete selectQuery.data[0].username
+                    // remove username from db IF username from API is exist
+                    if(realmAPIResult) delete selectQuery.data[0].username
                     // merge data from db AND realm api
                     const replyObj = {
                         // data from api
@@ -150,6 +150,49 @@ class PlayerCommands {
                     break
                 }
             }
+        } catch (error) {
+            console.log(error);
+            await fetcherWebhook(this.interact.commandName, error)
+        }
+    }
+
+    async player_deaths() {
+        try {
+            // get inputs
+            const inputUsername = this.interact.options.get('username').value.toLowerCase()
+            const inputDisplay = this.interact.options.get('display')?.value
+            // defer reply
+            if(inputDisplay == null) 
+                await this.interact.deferReply({ flags: '4096' })
+            else 
+                await this.interact.deferReply({ ephemeral: true })
+            // graveyard module
+            const scrape = require('graveyard-scrape').scrapeGraveyard
+            const graveyards = await scrape(inputUsername, 6)
+            if(graveyards.length === 0) {
+                // reply interact
+                return await this.interact.followUp({ content: `player **${inputUsername}** could be private / doesnt exist :skull:` })
+            }
+            // create embed
+            const embedGraves = new EmbedBuilder()
+                .setTitle(`${inputUsername} graveyard`)
+                .setDescription(':nerd: - latest death\n───────────────────')
+            // add fields
+            for(let i in graveyards) {
+                const graveDate = new Date(graveyards[i].death_date).toLocaleDateString('id')
+                const graveTitle = `${graveyards[i].class} (${graveDate}) ${i == 5 ? ':nerd:' : ''}`
+                const graveDetails = `**stats:** ${graveyards[i].death_stats}
+                                    **base:** ${graveyards[i].base_fame} Fame
+                                    **total:** ${graveyards[i].total_fame} Fame
+                                    **killed by:** ${graveyards[i].killed_by}`
+                embedGraves.addFields({
+                    name: (i > 2 ? '───────────────────\n' : '') + graveTitle, 
+                    value: graveDetails, 
+                    inline: true
+                })
+            }
+            // reply interact
+            await this.interact.followUp({ embeds: [embedGraves] })
         } catch (error) {
             console.log(error);
             await fetcherWebhook(this.interact.commandName, error)

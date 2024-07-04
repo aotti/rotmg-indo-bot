@@ -1,7 +1,3 @@
-const { selectOne, insertDataRow, updateData, selectAll, queryBuilder } = require('../database/databaseQueries')
-const { EmbedBuilder } = require('discord.js')
-const { fetcherRealmEye, fetcherManageRole, fetcherWeather, fetcherNotLocal } = require('../helper/fetcher');
-const { weatherConditionTranslate, weatherFieldName, weatherPrecipitation } = require('../helper/weatherChoices');
 const DiscordCommands = require('./classes/DiscordCommands');
 const PlayerCommands = require('./classes/PlayerCommands');
 const MabarCommands = require('./classes/MabarCommands');
@@ -17,6 +13,12 @@ async function replyMessage(interact) {
         case 'greetings':
             console.log(interact.member.nickname, '> starting greetings command');
             try {
+                // const scrape = require('graveyard-scrape').scrapeGraveyard
+                // scrape('kanadechan', 1).then(result => {
+                //     const deathdate = result[0].death_date + ''
+                //     // console.log(new Date(deathdate).toLocaleString());
+                //     console.log(result);
+                // })
                 const randReply = Math.round(Math.random()) === 1 
                                 ? 'kk lobster syuki 🥰' 
                                 : 'kk lobster kirai <:tsundere:1186674638093295616>'
@@ -49,6 +51,10 @@ async function replyMessage(interact) {
                 case 'player_notlocal':
                     console.log(interact.member.nickname, '> starting player_notlocal command');
                     playerCommands.player_notlocal()
+                    break
+                case 'player_deaths': 
+                    console.log(interact.member.nickname, '> starting player_deaths command');
+                    playerCommands.player_deaths()
                     break
                 case 'player_insert':
                     console.log(interact.member.nickname, '> starting player_insert command');
