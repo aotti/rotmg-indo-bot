@@ -33,11 +33,6 @@ bot.on('ready', (b) => {
 bot.on('interactionCreate', async (interact) => {
     // check if user really use slash command
     if(!interact.isChatInputCommand()) return
-    // handle discord API error
-    process.on('unhandledRejection', async (error) => {
-        console.log(error);
-        await fetcherWebhook(interact.commandName, error)
-    })
     // reply to user who interacted with slash commands
     replyMessage(interact)
 })
@@ -51,6 +46,12 @@ bot.on('guildMemberAdd', (b) => {
 bot.on('guildMemberRemove', (b) => {
     const username = b.nickname || b.displayName
     b.guild.channels.cache.get(process.env.GENERAL_CHANNEL).send(`si **${username}** leave gays :skull:`)
+})
+
+// handle discord API error
+process.on('unhandledRejection', async (error) => {
+    console.log(error);
+    await fetcherWebhook('discord interact api', error)
 })
 
 // make bot comes online

@@ -82,6 +82,31 @@ async function registerCommands() {
                         }
                     ]
                 },
+                // death reminder
+                {
+                    type: ApplicationCommandOptionType.Subcommand,
+                    name: 'player_death_alarm',
+                    description: 'set alarm to remind your grave today',
+                    options: [
+                        {
+                            type: ApplicationCommandOptionType.String,
+                            name: 'username',
+                            description: 'player ingame name',
+                            required: true
+                        },
+                        {
+                            type: ApplicationCommandOptionType.String,
+                            name: 'status',
+                            description: 'alarm status',
+                            required: true,
+                            choices: [
+                                { name: 'ON', value: 'ON' },
+                                { name: 'OFF', value: 'OFF' }
+                            ],
+                            required: true
+                        }
+                    ]
+                },
                 // get not local players
                 {
                     type: ApplicationCommandOptionType.Subcommand,
@@ -104,11 +129,6 @@ async function registerCommands() {
                             type: ApplicationCommandOptionType.String,
                             name: 'alias',
                             description: 'nama awiwi 😳'
-                        },
-                        {
-                            type: ApplicationCommandOptionType.String,
-                            name: 'region',
-                            description: 'tempat niggal 😎'
                         }
                     ]
                 },
@@ -128,11 +148,6 @@ async function registerCommands() {
                             type: ApplicationCommandOptionType.String,
                             name: 'alias',
                             description: 'nama awiwi 😳'
-                        },
-                        {
-                            type: ApplicationCommandOptionType.String,
-                            name: 'region',
-                            description: 'tempat niggal 😎'
                         },
                         {
                             type: ApplicationCommandOptionType.String,

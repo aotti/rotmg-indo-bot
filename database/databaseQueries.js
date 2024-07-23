@@ -82,7 +82,7 @@ function queryBuilder(table, selectColumn, whereColumn = null, whereValue = null
             // table players
             case 1: choosenColumns.push('username, discord_id'); break
             case 2: choosenColumns.push('alias'); break
-            case 3: choosenColumns.push('region'); break
+            case 3: choosenColumns.push('death'); break
             // table schedules
             case 4: choosenColumns.push('title'); break
             case 5: choosenColumns.push('date'); break

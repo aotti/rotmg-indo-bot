@@ -56,6 +56,10 @@ async function replyMessage(interact) {
                     console.log(interact.member.nickname, '> starting player_deaths command');
                     playerCommands.player_deaths()
                     break
+                case 'player_death_alarm': 
+                    console.log(interact.member.nickname, '> starting player_deaths command');
+                    playerCommands.player_death_alarm()
+                    break
                 case 'player_insert':
                     console.log(interact.member.nickname, '> starting player_insert command');
                     playerCommands.player_insert()

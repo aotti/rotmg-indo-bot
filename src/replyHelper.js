@@ -16,11 +16,11 @@ function setReplyContent(type, data) {
         "~~                                               ~~\n" + 
         "`username :` " + data.username + ` **(${data.discord_username || 'not linked'})**` + "\n" +
         "`alias    :` " + data.alias + "\n" +
-        "`region   :` " + data.region + "\n" +
         "`rank     :` " + data.rank + "\n" +
         "`guild    :` " + data.guild + "\n" +
         "`created  :` " + data.created + "\n" +
         "`last seen:` " + data.lastSeen + "\n" +
+        "`ded alarm:` " + (data.death ? "ON" : "OFF") + "\n" +
         "`status   :` " + data.status
         return contentBody
     }
@@ -30,8 +30,7 @@ function setReplyContent(type, data) {
         contentTitle +
         "~~                                               ~~\n" + 
         "`username :` " + data.username + "\n" +
-        "`alias    :` " + data.alias + "\n" +
-        "`region   :` " + data.region
+        "`alias    :` " + data.alias + "\n" 
         return contentBody
     }
     else if(type === 'mabar' || type === 'edit_mabar') {

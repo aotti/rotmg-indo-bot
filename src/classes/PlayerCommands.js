@@ -199,6 +199,52 @@ class PlayerCommands {
         }
     }
 
+    async player_death_alarm() {
+        // check input value
+        const inputStatus = this.interact.options.get('status').value.toLowerCase()
+        const inputUsername = this.interact.options.get('username').value.toLowerCase()
+        // alarm on
+        if(inputStatus == 'on') {
+            // update player query
+            const updateObj = {
+                death: true
+            }
+            const query = queryBuilder(
+                'players', 123, 'username', inputUsername,
+                { type: 'update', obj: filterObjectValues(updateObj) }
+            )
+            // update data
+            const updateQuery = await updateData(query)
+            // check if the result is error / not found
+            if(await resultHandler(this.interact, updateQuery, inputUsername)) return
+            // reply after success update
+            const replyContent = "**death alarm is now ON**" +
+                                "\nmake sure your graveyard is public, if your graveyard not showing" +
+                                "\nprobably because realmeye not updating the graveyard :nerd:" +
+                                "\nto update the graveyard on realmeye, you can try create new character" +
+                                "\nto replace the empty slot (worth a try :sunglasses:)"
+            await this.interact.reply({ content: replyContent, ephemeral: true })
+        }
+        // alarm off
+        else if(inputStatus == 'off') {
+            // update player query
+            const updateObj = {
+                death: false
+            }
+            const query = queryBuilder(
+                'players', 123, 'username', inputUsername,
+                { type: 'update', obj: filterObjectValues(updateObj) }
+            )
+            // update data
+            const updateQuery = await updateData(query)
+            // check if the result is error / not found
+            if(await resultHandler(this.interact, updateQuery, inputUsername)) return
+            // reply after success update
+            const replyContent = "**death alarm is now OFF** :skull:"
+            await this.interact.reply({ content: replyContent, ephemeral: true })
+        }
+    }
+
     async player_notlocal() {
         try {
             const afterQuery = 'after=1227861247068864602'

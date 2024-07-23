@@ -24,7 +24,7 @@ class DiscordCommands {
             else {
                 const inputUsername = this.interact.options.get('username').value.toLowerCase()
                 // find username
-                const usernameQuery = queryBuilder('players', 123, 'username', inputUsername)
+                const usernameQuery = queryBuilder('players', 12, 'username', inputUsername)
                 const selectResult = await selectOne(usernameQuery)
                 // check if the result is error / not found
                 if(await resultHandler(this.interact, selectResult, inputUsername)) return
