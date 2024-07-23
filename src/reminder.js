@@ -116,12 +116,6 @@ async function deathReminder(bot, selectDeaths) {
         }
         // get player data success
         else if(selectDeaths.error === null) {
-            if(selectDeaths.data.length === 0) {
-                return channel.send({ 
-                    content: 'Mengapa tydac ada yg pingsan hari ini? :sob:\n run `/death_alarm` agar graveyard klean bisa masuk alarm', 
-                    flags: '4096' 
-                })
-            }
             // get player graveyard
             const scrape = require('graveyard-scrape').scrapeGraveyard
             // death embed
@@ -129,11 +123,13 @@ async function deathReminder(bot, selectDeaths) {
                 .setTitle('Latest Indog Deaths')
                 .setDescription('daftar player yang meninggal hari ini :skull:')
             // player list
+            let deathCounter = 0
             const dateNow = new Date().getDate()
             for(let death of selectDeaths.data) {
                 const playerGrave = await scrape(death.username, 1)
                 // check graveyard date
                 if(new Date(playerGrave[0].death_date).getDate() === dateNow) {
+                    deathCounter++
                     // death info
                     const deathInfo = `**class:** ${playerGrave[0].class}
                                         **stats:** ${playerGrave[0].death_stats}
@@ -147,6 +143,13 @@ async function deathReminder(bot, selectDeaths) {
                 }
             }
             deathsEmbed.setTimestamp()
+            // if no one died graveyard
+            if(deathCounter === 0) {
+                return await channel.send({ 
+                    content: 'Mengapa tydac ada yg pingsan hari ini? :sob:\n run `/death_alarm` agar graveyard klean bisa masuk alarm', 
+                    flags: '4096' 
+                })
+            }
             // send embed
             await channel.send({ embeds: [deathsEmbed], flags: '4096' })
         }
