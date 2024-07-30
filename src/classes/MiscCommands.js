@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require("discord.js")
-const { fetcherManageRole, fetcherWeather } = require("../../helper/fetcher")
+const { fetcherManageRole, fetcherWeather, fetcherWebhook } = require("../../helper/fetcher")
 const { weatherFieldName, weatherConditionTranslate, weatherPrecipitation } = require("../../helper/weatherChoices")
 const { replyPagination } = require("../replyHelper")
 

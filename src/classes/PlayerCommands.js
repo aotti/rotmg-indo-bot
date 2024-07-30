@@ -205,6 +205,13 @@ class PlayerCommands {
         const inputUsername = this.interact.options.get('username').value.toLowerCase()
         // alarm on
         if(inputStatus == 'on') {
+            // get player graveyard
+            const scrape = require('graveyard-scrape').scrapeGraveyard
+            // is graveyard public
+            const isGraveyardPublic = await scrape(inputUsername, 1)
+            if(isGraveyardPublic.length === 0 || new Date(isGraveyardPublic[0].death_date).toString() == 'Invalid Date') {
+                return await this.interact.reply({ content: 'your graveyard is private :skull:', ephemeral: true })
+            }
             // update player query
             const updateObj = {
                 death: true
@@ -219,8 +226,7 @@ class PlayerCommands {
             if(await resultHandler(this.interact, updateQuery, inputUsername)) return
             // reply after success update
             const replyContent = "**death alarm is now ON**" +
-                                "\nmake sure your graveyard is public, if your graveyard not showing" +
-                                "\nprobably because realmeye not updating the graveyard :nerd:" +
+                                "\nif your graveyard not showing, probably cuz realmeye not updating yet :nerd:" +
                                 "\nto update the graveyard on realmeye, you can try create new character" +
                                 "\nto replace the empty slot (worth a try :sunglasses:)"
             await this.interact.reply({ content: replyContent, ephemeral: true })

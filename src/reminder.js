@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require("discord.js");
 const { queryBuilder, selectOne, selectAll } = require("../database/databaseQueries");
 const { indonesiaDate, convertTime12to24 } = require("../helper/dateTime");
-const { fetcherReminder } = require("../helper/fetcher");
+const { fetcherReminder, fetcherWebhook } = require("../helper/fetcher");
 const regCommands = require('./register-commands')
 
 async function greetingsReminder(bot) {
@@ -123,12 +123,14 @@ async function deathReminder(bot, selectDeaths) {
                 .setTitle('Latest Indog Deaths')
                 .setDescription('daftar player yang meninggal hari ini :skull:')
             // player list
+            const deathPlayers = []
+            // graveyard counter
             let deathCounter = 0
             const dateNow = new Date().getDate()
             for(let death of selectDeaths.data) {
                 const playerGrave = await scrape(death.username, 1)
                 // check graveyard date
-                if(new Date(playerGrave[0].death_date).getDate() === dateNow) {
+                if(playerGrave.length > 0 && new Date(playerGrave[0].death_date).getDate() === dateNow) {
                     deathCounter++
                     // death info
                     const deathInfo = `**class:** ${playerGrave[0].class}
@@ -141,12 +143,32 @@ async function deathReminder(bot, selectDeaths) {
                         value: deathInfo
                     })
                 }
+                else {
+                    // is graveyard private
+                    const isGravePrivate = playerGrave.length > 0 ? '✅' : '🔒'
+                    deathPlayers.push(`${death.username} - ${isGravePrivate}`)
+                }
             }
             deathsEmbed.setTimestamp()
             // if no one died graveyard
             if(deathCounter === 0) {
+                deathsEmbed.addFields({
+                    name: `Tidak ada yang meninggal hari ini :sob:`,
+                    value: 'kalo mau graveyard klean muncul di daily reminder, run command **`/death_alarm`** tapi graveyard klean harus public di realmeye 💀 '
+                })
+                // player list
+                let deathPlayersContent = ''
+                for(let i in deathPlayers) {
+                    // dont new line on 1st loop
+                    if(+i > 0 && +i % 4 === 0) 
+                        deathPlayersContent += `\n${deathPlayers[i]} | `
+                    // 5th / last player dont need separator |
+                    else 
+                        deathPlayersContent += (deathPlayers.length-1 == i || +i % 4 === 0 ? `${deathPlayers[i]}` : `${deathPlayers[i]} | `)
+                }
                 return await channel.send({ 
-                    content: 'Mengapa tydac ada yg pingsan hari ini? :sob:\n run `/death_alarm` agar graveyard klean bisa masuk alarm', 
+                    content: `Graveyard Status\n🔒 - private\n✅ - public\n───────────────────\n${deathPlayersContent}`,
+                    embeds: [deathsEmbed], 
                     flags: '4096' 
                 })
             }

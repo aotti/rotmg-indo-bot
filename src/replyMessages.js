@@ -2,6 +2,7 @@ const DiscordCommands = require('./classes/DiscordCommands');
 const PlayerCommands = require('./classes/PlayerCommands');
 const MabarCommands = require('./classes/MabarCommands');
 const MiscCommands = require('./classes/MiscCommands');
+const { fetcherWebhook } = require('../helper/fetcher');
 
 async function replyMessage(interact) {
     const discordCommands = new DiscordCommands(interact)
