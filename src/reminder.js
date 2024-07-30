@@ -10,7 +10,7 @@ async function greetingsReminder(bot) {
         // get players with death alarm
         const deathQuery = queryBuilder('players', 13, 'death', true)
         const selectDeaths = await selectAll(deathQuery)
-        
+        // await deathReminder(bot, selectDeaths)
         const reminderEmojis = [
             { name: 'sahur', emoji: ':sleeping:' },
             { name: 'subuh', emoji: ':yawning_face:' },
@@ -129,6 +129,9 @@ async function deathReminder(bot, selectDeaths) {
             const dateNow = new Date().getDate()
             for(let death of selectDeaths.data) {
                 const playerGrave = await scrape(death.username, 1)
+                // is graveyard private
+                const isGravePrivate = playerGrave.length > 0 ? '✅' : '🔒'
+                deathPlayers.push(`${death.username} - ${isGravePrivate}`)
                 // check graveyard date
                 if(playerGrave.length > 0 && new Date(playerGrave[0].death_date).getDate() === dateNow) {
                     deathCounter++
@@ -143,11 +146,16 @@ async function deathReminder(bot, selectDeaths) {
                         value: deathInfo
                     })
                 }
-                else {
-                    // is graveyard private
-                    const isGravePrivate = playerGrave.length > 0 ? '✅' : '🔒'
-                    deathPlayers.push(`${death.username} - ${isGravePrivate}`)
-                }
+            }
+            // player list
+            let deathPlayersContent = ''
+            for(let i in deathPlayers) {
+                // dont new line on 1st loop
+                if(+i > 0 && +i % 4 === 0) 
+                    deathPlayersContent += `\n${deathPlayers[i]} | `
+                // 5th / last player dont need separator |
+                else 
+                    deathPlayersContent += (deathPlayers.length-1 == i || (+i > 0 && +i % 4 === 0) ? `${deathPlayers[i]}` : `${deathPlayers[i]} | `)
             }
             deathsEmbed.setTimestamp()
             // if no one died graveyard
@@ -156,16 +164,6 @@ async function deathReminder(bot, selectDeaths) {
                     name: `Tidak ada yang meninggal hari ini :sob:`,
                     value: 'kalo mau graveyard klean muncul di daily reminder, run command **`/death_alarm`** tapi graveyard klean harus public di realmeye 💀 '
                 })
-                // player list
-                let deathPlayersContent = ''
-                for(let i in deathPlayers) {
-                    // dont new line on 1st loop
-                    if(+i > 0 && +i % 4 === 0) 
-                        deathPlayersContent += `\n${deathPlayers[i]} | `
-                    // 5th / last player dont need separator |
-                    else 
-                        deathPlayersContent += (deathPlayers.length-1 == i || +i % 4 === 0 ? `${deathPlayers[i]}` : `${deathPlayers[i]} | `)
-                }
                 return await channel.send({ 
                     content: `Graveyard Status\n🔒 - private\n✅ - public\n───────────────────\n${deathPlayersContent}`,
                     embeds: [deathsEmbed], 
@@ -173,7 +171,11 @@ async function deathReminder(bot, selectDeaths) {
                 })
             }
             // send embed
-            await channel.send({ embeds: [deathsEmbed], flags: '4096' })
+            await channel.send({ 
+                content: `Graveyard Status\n🔒 - private\n✅ - public\n───────────────────\n${deathPlayersContent}`,
+                embeds: [deathsEmbed], 
+                flags: '4096' 
+            })
         }
     } catch (error) {
         console.log(error);
