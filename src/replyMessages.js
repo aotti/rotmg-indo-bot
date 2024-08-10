@@ -13,17 +13,14 @@ async function replyMessage(interact) {
     switch(interact.commandName) {
         case 'greetings':
             console.log(interact.member.nickname, '> starting greetings command');
+            // defer message until the fetch done
+            await this.interact.deferReply({ flags: '4096' })
+
             try {
-                // const scrape = require('graveyard-scrape').scrapeGraveyard
-                // scrape('kanadechan', 1).then(result => {
-                //     const deathdate = result[0].death_date + ''
-                //     // console.log(new Date(deathdate).toLocaleString());
-                //     console.log(result);
-                // })
                 const randReply = Math.round(Math.random()) === 1 
                                 ? 'kk lobster syuki 🥰' 
                                 : 'kk lobster kirai <:tsundere:1186674638093295616>'
-                await interact.reply({ content: randReply })
+                await interact.editReply({ content: randReply })
             } catch (error) {
                 console.log(error);
                 await fetcherWebhook(this.interact.commandName, error)
