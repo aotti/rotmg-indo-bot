@@ -7,10 +7,15 @@ const regCommands = require('./register-commands')
 async function greetingsReminder(bot) {
     try {
         const channel = await bot.channels.fetch(process.env.GENERAL_CHANNEL)
-        // get players with death alarm
-        const deathQuery = queryBuilder('players', 13, 'death', true)
-        const selectDeaths = await selectAll(deathQuery)
+        // help reminder
+        const helpTimeRoll = (time) => Math.floor(Math.random() * 12) + time
+        let helpTime = [helpTimeRoll(1), helpTimeRoll(12)]
+        console.log({helpTime});
+        // // get players with death alarm
+        // const deathQuery = queryBuilder('players', 13, 'death', true)
+        // const selectDeaths = await selectAll(deathQuery)
         // await deathReminder(bot, selectDeaths)
+        // emojis
         const reminderEmojis = [
             { name: 'sahur', emoji: ':sleeping:' },
             { name: 'subuh', emoji: ':yawning_face:' },
@@ -29,10 +34,20 @@ async function greetingsReminder(bot) {
         let interval = 3_600_000 // 25mins = 1_500_000, 30mins = 1_800_000, 60mins = 3_600_000
         let startInterval = setInterval(() => { reminderInterval() }, interval);
         async function reminderInterval() {
+            // get players with death alarm
+            const deathQuery = queryBuilder('players', 13, 'death', true)
+            const selectDeaths = await selectAll(deathQuery)
             // get current time 
             const currentTime = indonesiaDate().locale.split(' ').slice(1).join(' ')
             // get only the hours 
             const currentHours = +convertTime12to24(currentTime).split(':')[0]
+            // help time reminder
+            if(currentHours === helpTime[0] || currentHours === helpTime[1]) {
+                await channel.send({ 
+                    content: `Kalau klean terbingungan cara pake bot, silahkan cek <#1226420764497019040> 😳`, 
+                    flags: '4096' 
+                })
+            }
             // loop schedules
             for(let i in reminderResult.schedules) {
                 const [scheduleHours, scheduleMinutes] = reminderResult.schedules[i].split(':')
@@ -50,7 +65,11 @@ async function greetingsReminder(bot) {
                     // register command to update mabar_set command date
                     if(currentHours === 7) await regCommands()
                     // death reminder on selamat pingsan
-                    if(currentHours === 22) await deathReminder(bot, selectDeaths)
+                    if(currentHours === 22) {
+                        // help reminder roll between 7:00 ~ 21:00
+                        helpTime = Math.floor(Math.random() * (21 - 7)) + 7
+                        await deathReminder(bot, selectDeaths)
+                    }
                     // ping wawan role
                     const wawanRole = '<@&1185102820769280091>'
                     // pagi / pingsan time
@@ -128,36 +147,50 @@ async function deathReminder(bot, selectDeaths) {
             let deathCounter = 0
             const dateNow = new Date().getDate()
             for(let death of selectDeaths.data) {
-                const playerGrave = await scrape(death.username, 1)
+                const playerGrave = await scrape(death.username, 2)
                 // is graveyard private
                 const isGravePrivate = playerGrave.length > 0 ? '✅' : '🔒'
-                deathPlayers.push(`${death.username} - ${isGravePrivate}`)
+                deathPlayers.push(`${isGravePrivate} ${death.username}`)
                 // check graveyard date
-                if(playerGrave.length > 0 && new Date(playerGrave[0].death_date).getDate() === dateNow) {
-                    deathCounter++
-                    // death info
-                    const deathInfo = `**class:** ${playerGrave[0].class}
-                                        **stats:** ${playerGrave[0].death_stats}
-                                        **base:** ${playerGrave[0].base_fame} Fame
-                                        **total:** ${playerGrave[0].total_fame} Fame
-                                        **killed by:** ${playerGrave[0].killed_by}`
-                    deathsEmbed.addFields({
-                        name: death.username,
-                        value: deathInfo
-                    })
+                for(let grave of playerGrave) {
+                    if(playerGrave.length > 0 && new Date(grave.death_date).getDate() === dateNow) {
+                        deathCounter++
+                        // death info
+                        const deathInfo = `**class:** ${grave.class}
+                                            **stats:** ${grave.death_stats}
+                                            **base:** ${grave.base_fame} Fame
+                                            **total:** ${grave.total_fame} Fame
+                                            **killed by:** ${grave.killed_by}`
+                        deathsEmbed.addFields({
+                            name: death.username,
+                            value: deathInfo,
+                            inline: true
+                        })
+                    }
                 }
             }
-            // player list
-            let deathPlayersContent = ''
-            for(let i in deathPlayers) {
-                // dont new line on 1st loop
-                if(+i > 0 && +i % 4 === 0) 
-                    deathPlayersContent += `\n${deathPlayers[i]} | `
-                // 5th / last player dont need separator |
-                else 
-                    deathPlayersContent += (deathPlayers.length-1 == i || (+i > 0 && +i % 4 === 0) ? `${deathPlayers[i]}` : `${deathPlayers[i]} | `)
-            }
             deathsEmbed.setTimestamp()
+            // split player list
+            const splitDeathPlayers = []
+            const splitBase = 5
+            const splitCounter = Math.ceil(deathPlayers.length / splitBase)
+            for(let i=0; i<splitCounter; i++) {
+                const [sliceMin, sliceMax] = [i * splitBase, (i+1) * splitBase]
+                splitDeathPlayers.push(deathPlayers.slice(sliceMin, sliceMax))
+            }
+            // player list embed
+            const deathPlayersEmbed = new EmbedBuilder()
+                .setTitle('Graveyard Status')
+                .setDescription('🔒 - private | ✅ - public')
+            for(let i in splitDeathPlayers) {
+                deathPlayersEmbed.addFields({
+                    name: i == 0 ? 'Player List' : '** **',
+                    value: splitDeathPlayers[i].join('\n'),
+                    inline: true
+                })
+            }
+            // ### PAKE DOBEL EMBEDS
+            // ### EMBED 1 = PLAYER LIST | EMBED 2 = GRAVE LIST
             // if no one died graveyard
             if(deathCounter === 0) {
                 deathsEmbed.addFields({
@@ -165,15 +198,13 @@ async function deathReminder(bot, selectDeaths) {
                     value: 'kalo mau graveyard klean muncul di daily reminder, run command **`/death_alarm`** tapi graveyard klean harus public di realmeye 💀 '
                 })
                 return await channel.send({ 
-                    content: `Graveyard Status\n🔒 - private\n✅ - public\n───────────────────\n${deathPlayersContent}`,
-                    embeds: [deathsEmbed], 
+                    embeds: [deathPlayersEmbed, deathsEmbed], 
                     flags: '4096' 
                 })
             }
             // send embed
             await channel.send({ 
-                content: `Graveyard Status\n🔒 - private\n✅ - public\n───────────────────\n${deathPlayersContent}`,
-                embeds: [deathsEmbed], 
+                embeds: [deathPlayersEmbed, deathsEmbed], 
                 flags: '4096' 
             })
         }

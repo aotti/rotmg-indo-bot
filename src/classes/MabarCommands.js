@@ -8,6 +8,9 @@ class MabarCommands {
     }
 
     async mabar_check() {
+        // defer message until the fetch done
+        await this.interact.deferReply({ ephemeral: true })
+
         try {
             // get mabar query
             const inputStatus = this.interact.options.get('status').value.toLowerCase()
@@ -16,7 +19,7 @@ class MabarCommands {
             const selectQuery = await selectAll(query)
             // if table empty, stop
             if(selectQuery.data.length === 0) {
-                return await this.interact.reply({ content: `There is no schedule`, ephemeral: true })
+                return await this.interact.editReply({ content: `There is no schedule` })
             }
             const scheduleObj = {}
             // split selectQuery.data materials
@@ -94,11 +97,14 @@ class MabarCommands {
     }
 
     async mabar_set() {
+        // defer message until the fetch done
+        await this.interact.deferReply({ ephemeral: true })
+
         try {
             // check if user is admin
             if(checkAdmin(this.interact.user.id) === -1) {
                 // not admin
-                return this.interact.reply({ content: 'Hanya **ADMIN** yang bisa menjalankan command ini.', ephemeral: true })
+                return this.interact.editReply({ content: 'Hanya **ADMIN** yang bisa menjalankan command ini.', ephemeral: true })
             }
             else {
                 // get player input value
@@ -121,7 +127,7 @@ class MabarCommands {
                 if(await resultHandler(this.interact, insertQuery)) return
                 // send reply after success insert data
                 const replyContent = setReplyContent('mabar', insertQuery.data[0])
-                await this.interact.reply({ content: replyContent, ephemeral: true })
+                await this.interact.editReply({ content: replyContent })
                 await this.interact.followUp({ content: '*new mabar schedule added, run /mabar_check to see it* :eyes:' })
             }
         } catch (error) {
@@ -131,10 +137,13 @@ class MabarCommands {
     }
 
     async mabar_edit() {
+        // defer message until the fetch done
+        await this.interact.deferReply({ ephemeral: true })
+
         try {
             if(checkAdmin(this.interact.user.id) === -1) {
                 // not admin
-                return await this.interact.reply({ content: 'Hanya **ADMIN** yang bisa menjalankan command ini.', ephemeral: true })
+                return await this.interact.editReply({ content: 'Hanya **ADMIN** yang bisa menjalankan command ini.', ephemeral: true })
             }
             else {
                 // get input value
@@ -157,7 +166,7 @@ class MabarCommands {
                 if(await resultHandler(this.interact, updateQuery, inputs.id)) return
                 // reply after success update
                 const replyContent = setReplyContent('edit_mabar', updateQuery.data[0])
-                await this.interact.reply({ content: replyContent, ephemeral: true })
+                await this.interact.editReply({ content: replyContent, ephemeral: true })
             }
         } catch (error) {
             console.log(error);

@@ -41,6 +41,9 @@ class MiscCommands {
         }
         // manage role
         async function runManageRole(interact, manageRoleObj) {
+            // defer message until the fetch done
+            await this.interact.deferReply({ ephemeral: true })
+
             try {
                 const { type, fetchMethod, checkMessage, successMessage, failedMessage } = manageRoleObj
                 // role endpoint
@@ -66,11 +69,9 @@ class MiscCommands {
                         // manage role fetch
                         const manageRoleResult = await fetcherManageRole(roleEndpoint, fetchOptions)
                         // success manage role to user 
-                        if(manageRoleResult) 
-                            await interact.reply({ content: successMessage, ephemeral: true })
+                        if(manageRoleResult) await interact.editReply({ content: successMessage })
                         // failed to manage role to user 
-                        else 
-                            await interact.reply({ content: failedMessage, ephemeral: true })
+                        else await interact.editReply({ content: failedMessage })
                 }
             } catch (error) {
                 console.log(error);
@@ -80,11 +81,15 @@ class MiscCommands {
     }
 
     async weather() {
+        const inputDisplay = this.interact.options.get('display')?.value || null
+        // defer reply
+        if(inputDisplay == null) await this.interact.deferReply({ ephemeral: true })
+        else await this.interact.deferReply({ flags: '4096' })
+
         try {
             // user input
             const inputCity = this.interact.options.get('city').value
             const inputType = this.interact.options.get('type').value
-            const inputDisplay = this.interact.options.get('display')?.value || null
             // fetch materials
             const weatherParams = {
                 type: inputType,
@@ -162,7 +167,7 @@ class MiscCommands {
             }
             // reply for everyone
             else {
-                return await this.interact.reply({ embeds: [weatherPerDayEmbed] })
+                return await this.interact.editReply({ embeds: [weatherPerDayEmbed] })
             }
         } catch (error) {
             console.log(error);

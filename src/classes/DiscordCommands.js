@@ -7,6 +7,9 @@ class DiscordCommands {
     }
 
     async discord_link() {
+        // defer message until the fetch done
+        await this.interact.deferReply({ ephemeral: true })
+
         try {
             // get discord id
             const discordId = this.interact.user.id
@@ -18,7 +21,7 @@ class DiscordCommands {
             if(selectQuery.data.length !== 0 && selectQuery.data[0].discord_id !== null) {
                 const replyContent = `your discord already linked to rotmg **${selectQuery.data[0].username}**` +
                                     "\nrun **/discord_unlink** to remove it"
-                await this.interact.reply({ content: replyContent, ephemeral: true })
+                await this.interact.editReply({ content: replyContent, ephemeral: true })
             }
             // discord_id not found
             else {
@@ -35,7 +38,7 @@ class DiscordCommands {
                     // if value string, must have length
                     if(selectResult.data[0].discord_id.length !== 0) {
                         // string length isnt 0, dont overwrite the value
-                        return await this.interact.reply({ 
+                        return await this.interact.editReply({ 
                             content: 'this username already linked to another discord account', 
                             ephemeral: true 
                         })
@@ -53,7 +56,7 @@ class DiscordCommands {
                 const updateResult = await updateData(query)
                 // reply message
                 const discordUsername = this.interact.member.nickname || this.interact.user.username
-                await this.interact.reply({ 
+                await this.interact.editReply({ 
                     content: `RotMG **${updateResult.data[0].username}** linked to Discord **${discordUsername}**`, 
                     ephemeral: true 
                 })
@@ -81,7 +84,7 @@ class DiscordCommands {
             if(await resultHandler(this.interact, updateQuery, discordId)) return
             // reply after success update
             const replyContent = `your discord not linked to rotmg **${updateQuery.data[0].username}** anymore`
-            await this.interact.reply({ content: replyContent, ephemeral: true })
+            await this.interact.editReply({ content: replyContent, ephemeral: true })
         } catch (error) {
             console.log(error);
             await fetcherWebhook(this.interact.commandName, error)

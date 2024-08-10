@@ -71,6 +71,9 @@ async function replyPagination(interact, embedArray) {
     })
 }
 
+/** 
+ * @returns if user is not admin -1, else >= 0
+ */
 function checkAdmin(userId) {
     return process.env.INDOG_FOUNDER.split('.').indexOf(userId)
 }
@@ -89,21 +92,21 @@ async function resultHandler(interact, result, userlookup = null) {
     try {
         // if result error
         if(result.data === null) {
-            await interact.reply({ content: JSON.stringify(result.error), flags: '4096' })
+            await interact.followUp({ content: JSON.stringify(result.error), flags: '4096' })
             return true
         }
         // if result success but data not found
         else if(result.data.length === 0) {
             // set reply message
             const replyContent = setReplyContent('not found', {username: userlookup})
-            await interact.reply({ content: replyContent, ephemeral: true })
+            await interact.followUp({ content: replyContent, ephemeral: true })
             return true
         }
         // if data found, return false
         return false
     } catch (error) {
         console.log(error);
-        await fetcherWebhook(`resultHandler-${this.interact.commandName}`, error)
+        await fetcherWebhook(`resultHandler-${interact.commandName}`, error)
     }
 }
 

@@ -9,14 +9,15 @@ class PlayerCommands {
     }
 
     async player_all() {
+        // defer message until the fetch done
+        await this.interact.deferReply({ ephemeral: true })
+
         try {
             const query = queryBuilder('players', 1)
             // get all player data
             const selectQuery = await selectAll(query)
             // check if the result is error / not found
             if(await resultHandler(this.interact, selectQuery)) return
-            // defer message until the fetch done
-            await this.interact.deferReply({ ephemeral: true })
             // players container
             const playersObj = {}
             const playersArr = []
@@ -87,6 +88,11 @@ class PlayerCommands {
     }
 
     async player_search() {
+        // waiting reply 
+        const inputDisplay = this.interact.options.get('display')?.value
+        if(inputDisplay == null) await this.interact.deferReply({ flags: '4096' })
+        else await this.interact.deferReply({ ephemeral: true })
+
         try {
             // get player input value
             const inputUsername = this.interact.options.get('username').value.toLowerCase()
@@ -96,12 +102,6 @@ class PlayerCommands {
             const selectQuery = await selectOne(query)
             // check if the result is error / not found
             if(await resultHandler(this.interact, selectQuery, inputUsername)) return
-            // waiting reply 
-            const inputDisplay = this.interact.options.get('display')?.value
-            if(inputDisplay == null) 
-                await this.interact.deferReply({ flags: '4096' })
-            else 
-                await this.interact.deferReply({ ephemeral: true })
             // fetch options
             const fetchOptions = {
                 method: 'GET',
@@ -157,15 +157,14 @@ class PlayerCommands {
     }
 
     async player_deaths() {
+        // get inputs
+        const inputUsername = this.interact.options.get('username').value.toLowerCase()
+        const inputDisplay = this.interact.options.get('display')?.value
+        // defer reply
+        if(inputDisplay == null) await this.interact.deferReply({ flags: '4096' })
+        else await this.interact.deferReply({ ephemeral: true })
+
         try {
-            // get inputs
-            const inputUsername = this.interact.options.get('username').value.toLowerCase()
-            const inputDisplay = this.interact.options.get('display')?.value
-            // defer reply
-            if(inputDisplay == null) 
-                await this.interact.deferReply({ flags: '4096' })
-            else 
-                await this.interact.deferReply({ ephemeral: true })
             // graveyard module
             const scrape = require('graveyard-scrape').scrapeGraveyard
             const graveyards = await scrape(inputUsername, 6)
@@ -200,6 +199,8 @@ class PlayerCommands {
     }
 
     async player_death_alarm() {
+        // defer message until the fetch done
+        await this.interact.deferReply({ ephemeral: true })
         // check input value
         const inputStatus = this.interact.options.get('status').value.toLowerCase()
         const inputUsername = this.interact.options.get('username').value.toLowerCase()
@@ -210,7 +211,7 @@ class PlayerCommands {
             // is graveyard public
             const isGraveyardPublic = await scrape(inputUsername, 1)
             if(isGraveyardPublic.length === 0 || new Date(isGraveyardPublic[0].death_date).toString() == 'Invalid Date') {
-                return await this.interact.reply({ content: 'your graveyard is private :skull:', ephemeral: true })
+                return await this.interact.editReply({ content: `${inputUsername} graveyard is private :skull:`, ephemeral: true })
             }
             // update player query
             const updateObj = {
@@ -229,7 +230,7 @@ class PlayerCommands {
                                 "\nif your graveyard not showing, probably cuz realmeye not updating yet :nerd:" +
                                 "\nto update the graveyard on realmeye, you can try create new character" +
                                 "\nto replace the empty slot (worth a try :sunglasses:)"
-            await this.interact.reply({ content: replyContent, ephemeral: true })
+            await this.interact.editReply({ content: replyContent, ephemeral: true })
         }
         // alarm off
         else if(inputStatus == 'off') {
@@ -247,11 +248,13 @@ class PlayerCommands {
             if(await resultHandler(this.interact, updateQuery, inputUsername)) return
             // reply after success update
             const replyContent = "**death alarm is now OFF** :skull:"
-            await this.interact.reply({ content: replyContent, ephemeral: true })
+            await this.interact.editReply({ content: replyContent, ephemeral: true })
         }
     }
 
     async player_notlocal() {
+        // defer message until the fetch done
+        await this.interact.deferReply({ flags: '4096' })
         try {
             const afterQuery = 'after=1227861247068864602'
             const limitQuery = 'limit=10'
@@ -305,7 +308,7 @@ class PlayerCommands {
                 })
             }
             // reply message
-            await this.interact.reply({ embeds: [notLocalEmbed], flags: '4096' })
+            await this.interact.editReply({ embeds: [notLocalEmbed] })
         } catch (error) {
             console.log(error);
             await fetcherWebhook(this.interact.commandName, error)
@@ -313,11 +316,13 @@ class PlayerCommands {
     }
 
     async player_insert() {
+        // defer message until the fetch done
+        await this.interact.deferReply({ ephemeral: true })
         try {
             // check if user is admin
             if(checkAdmin(this.interact.user.id) === -1) {
                 // not admin
-                return await this.interact.reply({ content: 'Hanya **ADMIN** yang bisa menjalankan command ini.', ephemeral: true })
+                return await this.interact.editReply({ content: 'Hanya **ADMIN** yang bisa menjalankan command ini.', ephemeral: true })
             }
             // admin
             else {
@@ -338,7 +343,7 @@ class PlayerCommands {
                 if(await resultHandler(this.interact, insertQuery)) return
                 // send reply after success insert data
                 const replyContent = setReplyContent('insert', insertQuery.data[0])
-                await this.interact.reply({ content: replyContent, ephemeral: true })
+                await this.interact.editReply({ content: replyContent })
             }
         } catch (error) {
             console.log(error);
@@ -347,6 +352,9 @@ class PlayerCommands {
     }
 
     async player_edit() {
+        // defer message until the fetch done
+        await this.interact.deferReply({ ephemeral: true })
+
         try {
             // check if user is admin
             if(checkAdmin(this.interact.user.id) === -1) {
@@ -377,7 +385,7 @@ class PlayerCommands {
                 if(await resultHandler(this.interact, updateQuery, inputs.username)) return
                 // reply after success update
                 const replyContent = setReplyContent('edit', updateQuery.data[0])
-                await this.interact.reply({ content: replyContent, ephemeral: true })
+                await this.interact.editReply({ content: replyContent, ephemeral: true })
             }
         } catch (error) {
             console.log(error);
