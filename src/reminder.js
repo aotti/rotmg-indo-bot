@@ -8,12 +8,14 @@ async function greetingsReminder(bot) {
     try {
         const channel = await bot.channels.fetch(process.env.GENERAL_CHANNEL)
         // help reminder
-        const helpTimeRoll = (time) => {
-            const time = Math.floor(Math.random() * 12) + time
+        const helpTimeRoll = (num) => {
+            const time = Math.floor(Math.random() * 12) + num
             // prevent help time same as default reminder
             switch(time) {
                 case 7: case 12: case 15: case 18: case 19: case 22: 
                     return time + 1
+                default: 
+                    return time
             }
         }
         let helpTime = [helpTimeRoll(1), helpTimeRoll(12)]
@@ -74,7 +76,7 @@ async function greetingsReminder(bot) {
                         [remindYear, remindMonth] = [new Date().getFullYear(), new Date().getMonth()]
                         // help reminder reset between 7:00 ~ 21:00
                         helpTime = [helpTimeRoll(1), helpTimeRoll(12)]
-                    // death reminder on selamat pingsan
+                        // death reminder on selamat pingsan
                         await deathReminder(bot, selectDeaths)
                     }
                     // ping wawan role

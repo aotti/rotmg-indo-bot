@@ -69,26 +69,27 @@ function fetcherWebhook(errorCommand, errorMessage) {
 
 function fetcherReminder(url, options) {
     return fetch(url, options)
-    .then(data => { return data.text() })
-    .then(htmlText => {
-        const sholatNamesRegex = /Shubuh|Dzuhur|Ashr|Maghrib|Isya/g
+    .then(data => { return data.json() })
+    .then(result => {
+        const sholatNamesRegex = /fajr|dhuhr|asr|maghrib|isha/gi
         const sholatNamesAlt = ['subuh', 'siang', 'sore', 'magrib', 'isya']
         // sholat schedules
-        const sholatObj = {
-            names: htmlText.match(sholatNamesRegex).map((v, i) => {
-                    const sholatName = v.replace(v, sholatNamesAlt[i]) 
-                    if(sholatName != 'undefined') return sholatName
-                }).filter(i=>i),
-            schedules: htmlText.match(/\d+:\d+/g)
+        const sholatToday = result.data.map(v => new Date(v.date.readable).getDate()).indexOf(new Date().getDate())
+        if(sholatToday !== -1) {
+            const sholatObj = {
+                names: Object.keys(result.data[sholatToday].timings).join(', ').match(sholatNamesRegex).map((v, i) => {
+                        const sholatName = v.replace(v, sholatNamesAlt[i]) 
+                        return sholatName
+                    }).filter(i=>i),
+                schedules: Object.entries(result.data[sholatToday].timings).map(v => {
+                        if(v[0].match(sholatNamesRegex)) return v[1].match(/\d+:\d+/g)[0]
+                    }).filter(i=>i)
+            }
+            // other schedules
+            sholatObj.names.push('pagi', 'pingsan')
+            sholatObj.schedules.push('07:00', '22:00')
+            return sholatObj
         }
-        // remove imsyak, terbit, dhuha
-        sholatObj.schedules.splice(0, 1)
-        sholatObj.schedules.splice(1, 1)
-        sholatObj.schedules.splice(1, 1)
-        // other schedules
-        sholatObj.names.push('pagi', 'pingsan')
-        sholatObj.schedules.push('07:00', '22:00')
-        return sholatObj
     })
     .catch(err => console.log(`reminderAPI error: ${err}`))
 }
