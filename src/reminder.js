@@ -8,13 +8,16 @@ async function greetingsReminder(bot) {
     try {
         const channel = await bot.channels.fetch(process.env.GENERAL_CHANNEL)
         // help reminder
-        const helpTimeRoll = (time) => Math.floor(Math.random() * 12) + time
+        const helpTimeRoll = (time) => {
+            const time = Math.floor(Math.random() * 12) + time
+            // prevent help time same as default reminder
+            switch(time) {
+                case 7: case 12: case 15: case 18: case 19: case 22: 
+                    return time + 1
+            }
+        }
         let helpTime = [helpTimeRoll(1), helpTimeRoll(12)]
         console.log({helpTime});
-        // // get players with death alarm
-        // const deathQuery = queryBuilder('players', 13, 'death', true)
-        // const selectDeaths = await selectAll(deathQuery)
-        // await deathReminder(bot, selectDeaths)
         // emojis
         const reminderEmojis = [
             { name: 'sahur', emoji: ':sleeping:' },
@@ -26,7 +29,8 @@ async function greetingsReminder(bot) {
             { name: 'pagi', emoji: ':expressionless:' },
             { name: 'pingsan', emoji: ':sleeping:' }
         ]
-        const reminderEndpoint = 'https://jadwalsholat.org/jadwal-sholat/daily.php?id=308'
+        let [remindYear, remindMonth] = [new Date().getFullYear(), new Date().getMonth()]
+        const reminderEndpoint = `https://api.aladhan.com/v1/calendarByCity/${remindYear}/${remindMonth}?city=Jakarta&country=Indonesia`
         const fetchOptions = { method: 'GET' }
         // get reminder schedules
         const reminderResult = await fetcherReminder(reminderEndpoint, fetchOptions)
@@ -64,19 +68,23 @@ async function greetingsReminder(bot) {
                     await mabarReminder(bot, reminderResult.names[i])
                     // register command to update mabar_set command date
                     if(currentHours === 7) await regCommands()
-                    // death reminder on selamat pingsan
+                    // reset reminder time
                     if(currentHours === 22) {
-                        // help reminder roll between 7:00 ~ 21:00
-                        helpTime = Math.floor(Math.random() * (21 - 7)) + 7
+                        // reminder reset
+                        [remindYear, remindMonth] = [new Date().getFullYear(), new Date().getMonth()]
+                        // help reminder reset between 7:00 ~ 21:00
+                        helpTime = [helpTimeRoll(1), helpTimeRoll(12)]
+                    // death reminder on selamat pingsan
                         await deathReminder(bot, selectDeaths)
                     }
                     // ping wawan role
                     const wawanRole = '<@&1185102820769280091>'
                     // pagi / pingsan time
+                    const komariHost = 'https://cdn.discordapp.com/attachments/479503233157693443'
                     const komariGIF = reminderResult.names[i] == 'pagi' 
-                                        ? 'https://tenor.com/b6iqmZt0yYD.gif'
+                                        ? `${komariHost}/1271488073301233726/terakomari-gandesblood-wake.gif`
                                         : reminderResult.names[i] == 'pingsan'
-                                            ? 'https://tenor.com/ti1FOaBMIK3.gif'
+                                            ? `${komariHost}/1271488073754214461/terakomari-gandesblood-sleep.gif`
                                             : ''
                     // split the time (07:00) > get the hour > parse it to number > get the array index
                     const emojiIndex = reminderEmojis.map(v => { return v.name }).indexOf(reminderResult.names[i])
