@@ -12,7 +12,9 @@ async function greetingsReminder(bot) {
             const time = Math.floor(Math.random() * 12) + num
             // prevent help time same as default reminder
             switch(time) {
-                case 7: case 12: case 15: case 18: case 19: case 22: 
+                // -1 from schedule time to prevent the 14min loop
+                // 7, 12, 15, 18, 19, 22
+                case 6: case 11: case 14: case 17: case 18: case 21: 
                     return time + 1
                 default: 
                     return time
