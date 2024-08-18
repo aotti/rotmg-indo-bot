@@ -43,7 +43,7 @@ class MiscCommands {
         async function runManageRole(interact, manageRoleObj) {
             try {
                 // defer message until the fetch done
-                await this.interact.deferReply({ ephemeral: true })
+                await interact.deferReply({ ephemeral: true })
     
                 const { type, fetchMethod, checkMessage, successMessage, failedMessage } = manageRoleObj
                 // role endpoint
