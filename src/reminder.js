@@ -157,7 +157,7 @@ async function deathReminder(bot, selectDeaths) {
             const deathPlayers = []
             // graveyard counter
             let deathCounter = 0
-            const dateNow = new Date().getDate()
+            const dateNow = new Date().toLocaleDateString()
             for(let death of selectDeaths.data) {
                 const playerGrave = await scrape(death.username, 2)
                 // is graveyard private
@@ -165,7 +165,7 @@ async function deathReminder(bot, selectDeaths) {
                 deathPlayers.push(`${isGravePrivate} ${death.username}`)
                 // check graveyard date
                 for(let grave of playerGrave) {
-                    if(playerGrave.length > 0 && new Date(grave.death_date).getDate() === dateNow) {
+                    if(playerGrave.length > 0 && new Date(grave.death_date).toLocaleDateString() === dateNow) {
                         deathCounter++
                         // death info
                         const deathInfo = `**class:** ${grave.class}

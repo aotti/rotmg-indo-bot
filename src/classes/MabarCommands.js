@@ -8,10 +8,10 @@ class MabarCommands {
     }
 
     async mabar_check() {
-        // defer message until the fetch done
-        await this.interact.deferReply({ ephemeral: true })
-
         try {
+            // defer message until the fetch done
+            await this.interact.deferReply({ ephemeral: true })
+    
             // get mabar query
             const inputStatus = this.interact.options.get('status').value.toLowerCase()
             const query = queryBuilder('schedules', 456789, 'status', inputStatus)
@@ -97,10 +97,10 @@ class MabarCommands {
     }
 
     async mabar_set() {
-        // defer message until the fetch done
-        await this.interact.deferReply({ ephemeral: true })
-
         try {
+            // defer message until the fetch done
+            await this.interact.deferReply({ ephemeral: true })
+    
             // check if user is admin
             if(checkAdmin(this.interact.user.id) === -1) {
                 // not admin
@@ -137,10 +137,10 @@ class MabarCommands {
     }
 
     async mabar_edit() {
-        // defer message until the fetch done
-        await this.interact.deferReply({ ephemeral: true })
-
         try {
+            // defer message until the fetch done
+            await this.interact.deferReply({ ephemeral: true })
+    
             if(checkAdmin(this.interact.user.id) === -1) {
                 // not admin
                 return await this.interact.editReply({ content: 'Hanya **ADMIN** yang bisa menjalankan command ini.', ephemeral: true })

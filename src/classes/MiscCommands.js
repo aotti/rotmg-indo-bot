@@ -41,10 +41,10 @@ class MiscCommands {
         }
         // manage role
         async function runManageRole(interact, manageRoleObj) {
-            // defer message until the fetch done
-            await this.interact.deferReply({ ephemeral: true })
-
             try {
+                // defer message until the fetch done
+                await this.interact.deferReply({ ephemeral: true })
+    
                 const { type, fetchMethod, checkMessage, successMessage, failedMessage } = manageRoleObj
                 // role endpoint
                 const roleEndpoint = `https://discord.com/api/v10/guilds/${roleObj.guildId}/members/${roleObj.userId}/roles/${roleObj.roleId}`
@@ -81,12 +81,12 @@ class MiscCommands {
     }
 
     async weather() {
-        const inputDisplay = this.interact.options.get('display')?.value || null
-        // defer reply
-        if(inputDisplay == null) await this.interact.deferReply({ ephemeral: true })
-        else await this.interact.deferReply({ flags: '4096' })
-
         try {
+            const inputDisplay = this.interact.options.get('display')?.value || null
+            // defer reply
+            if(inputDisplay == null) await this.interact.deferReply({ ephemeral: true })
+            else await this.interact.deferReply({ flags: '4096' })
+    
             // user input
             const inputCity = this.interact.options.get('city').value
             const inputType = this.interact.options.get('type').value

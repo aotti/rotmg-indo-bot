@@ -7,10 +7,10 @@ class DiscordCommands {
     }
 
     async discord_link() {
-        // defer message until the fetch done
-        await this.interact.deferReply({ ephemeral: true })
-
         try {
+            // defer message until the fetch done
+            await this.interact.deferReply({ ephemeral: true })
+    
             // get discord id
             const discordId = this.interact.user.id
             // discord_id != null, check is discord_id already used or not
@@ -69,6 +69,9 @@ class DiscordCommands {
 
     async discord_unlink() {
         try {
+            // defer message until the fetch done
+            await this.interact.deferReply({ ephemeral: true })
+    
             // get discord id
             const discordId = this.interact.user.id
             // update object
