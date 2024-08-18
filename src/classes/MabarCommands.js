@@ -1,4 +1,5 @@
 const { EmbedBuilder } = require("discord.js")
+const { fetcherWebhook } = require("../../helper/fetcher")
 const { queryBuilder, selectAll, insertDataRow, updateData } = require("../../database/databaseQueries")
 const { replyPagination, filterObjectValues, setReplyContent, resultHandler, checkAdmin } = require("../replyHelper")
 

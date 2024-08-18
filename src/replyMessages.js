@@ -13,9 +13,6 @@ async function replyMessage(interact) {
     switch(interact.commandName) {
         case 'greetings':
             console.log(interact.member.nickname, '> starting greetings command');
-            // defer message until the fetch done
-            await this.interact.deferReply({ flags: '4096' })
-
             try {
                 const randReply = Math.round(Math.random()) === 1 
                                 ? 'kk lobster syuki 🥰' 

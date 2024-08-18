@@ -1,5 +1,6 @@
 const { selectOne, queryBuilder, updateData } = require("../../database/databaseQueries")
 const { resultHandler } = require("../replyHelper")
+const { fetcherWebhook } = require("../../helper/fetcher")
 
 class DiscordCommands {
     constructor(interact) {
