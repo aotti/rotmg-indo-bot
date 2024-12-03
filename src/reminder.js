@@ -9,6 +9,7 @@ async function greetingsReminder(bot) {
         const channel = await bot.channels.fetch(process.env.GENERAL_CHANNEL)
         // help reminder
         const helpTimeRoll = (num) => {
+            // num = range reminder time, 1 = 1~12h | 12 = 12~24h
             const time = Math.floor(Math.random() * 12) + num
             // prevent help time same as default reminder
             switch(time) {
@@ -51,8 +52,11 @@ async function greetingsReminder(bot) {
             const currentHours = +convertTime12to24(currentTime).split(':')[0]
             // help time reminder
             if(currentHours === helpTime[0] || currentHours === helpTime[1]) {
+                const helpContent = `Kalau klean terbingungan cara pake bot, silahkan cek <#1226420764497019040> 😳
+                                    Untuk ingfo apdet rotmeg, silahkan cek <#514997341464297491> 🥺
+                                    Muledump untuk exalt (buatan bang es 😳) <#1297453347800092682>`
                 await channel.send({ 
-                    content: `Kalau klean terbingungan cara pake bot, silahkan cek <#1226420764497019040> 😳`, 
+                    content: helpContent, 
                     flags: '4096' 
                 })
             }

@@ -17,10 +17,10 @@ async function replyMessage(interact) {
                 const randReply = Math.round(Math.random()) === 1 
                                 ? 'kk lobster syuki 🥰' 
                                 : 'kk lobster kirai <:tsundere:1186674638093295616>'
-                await interact.editReply({ content: randReply })
+                await interact.reply({ content: randReply })
             } catch (error) {
                 console.log(error);
-                await fetcherWebhook(this.interact.commandName, error)
+                await fetcherWebhook(interact.commandName, error)
             }
             break
         // main command
