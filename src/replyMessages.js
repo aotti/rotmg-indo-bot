@@ -83,6 +83,9 @@ async function replyMessage(interact) {
                     console.log(interact.member.nickname, '> starting weather command');
                     miscCommands.weather()
                     break
+                case 'nerd': 
+                    console.log(interact.member.nickname, '> starting nerd command');
+                    miscCommands.nerd()
             }
             break
     }

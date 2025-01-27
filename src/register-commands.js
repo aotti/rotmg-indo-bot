@@ -312,6 +312,19 @@ async function registerCommands() {
                             ]
                         }
                     ]
+                },
+                {
+                    type: ApplicationCommandOptionType.Subcommand,
+                    name: 'nerd',
+                    description: 're-send user message with 🤓',
+                    options: [
+                        {
+                            type: ApplicationCommandOptionType.String,
+                            name: 'message_id',
+                            description: 'put message id that you wanna make a meme of',
+                            required: true
+                        }
+                    ]
                 }
             ]
         }

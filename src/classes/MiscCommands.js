@@ -174,6 +174,43 @@ class MiscCommands {
             await fetcherWebhook(this.interact.commandName, error)
         }
     }
+    
+    async nerd() {
+        // defer message until the fetch done
+        await this.interact.deferReply({ ephemeral: true })
+        // get message id
+        const messageId = this.interact.options.get('message_id')?.value || null
+        const channelId = this.interact.channelId
+        // get message data
+        // fetch options
+        const fetchOptions = {
+            method: 'GET',
+            headers: {
+                Authorization: `Bot ${process.env.TOKEN}`
+            }
+        }
+        const getMessageURL = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}`
+        const getMessageFetch = await (await fetch(getMessageURL, fetchOptions)).json()
+        if(!getMessageFetch?.content) return await this.interact.editReply({ content: 'cannot meme from thread' })
+        // message content
+        const messageContent = getMessageFetch.content
+        // message author data
+        const {id, username, avatar} = getMessageFetch.author
+        // send message from webhook
+        const [memeHookId, memeHookToken] = [process.env.MEMEHOOK_ID, process.env.MEMEHOOK_TOKEN]
+        const memeFetchOptions = {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+                username: username,
+                avatar_url: `https://cdn.discordapp.com/avatars/${id}/${avatar}`,
+                content: `${messageContent} 🤓`
+            })
+        }
+        const sendMemeFetch = await fetch(`https://discord.com/api/v10/webhooks/${memeHookId}/${memeHookToken}`, memeFetchOptions)
+        if(sendMemeFetch.status < 300) await this.interact.editReply({ content: 'meme sent' })
+        else console.log('send meme error', sendMemeFetch)
+    }
 }
 
 module.exports = MiscCommands
