@@ -34,7 +34,7 @@ async function greetingsReminder(bot) {
             { name: 'pagi', emoji: ':expressionless:' },
             { name: 'pingsan', emoji: ':sleeping:' }
         ]
-        let [remindYear, remindMonth] = [new Date().getFullYear(), new Date().getMonth()]
+        let [remindYear, remindMonth] = [new Date().getFullYear(), new Date().getMonth()+1]
         const reminderEndpoint = `https://api.aladhan.com/v1/calendarByCity/${remindYear}/${remindMonth}?city=Jakarta&country=Indonesia`
         const fetchOptions = { method: 'GET' }
         // get reminder schedules
