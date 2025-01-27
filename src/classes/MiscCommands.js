@@ -181,7 +181,6 @@ class MiscCommands {
         // get message id, channel id, username
         const messageId = this.interact.options.get('message_id')?.value || null
         const channelId = this.interact.channelId
-        const discordUsername = this.interact.member.nickname || this.interact.user.displayName
         // get message data
         // fetch options
         const fetchOptions = {
@@ -196,14 +195,14 @@ class MiscCommands {
         // message content
         const messageContent = getMessageFetch.content
         // message author data
-        const {id, avatar} = getMessageFetch.author
+        const {id, username, avatar} = getMessageFetch.author
         // send message from webhook
         const [memeHookId, memeHookToken] = [process.env.MEMEHOOK_ID, process.env.MEMEHOOK_TOKEN]
         const memeFetchOptions = {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
-                username: discordUsername,
+                username: username,
                 avatar_url: `https://cdn.discordapp.com/avatars/${id}/${avatar}`,
                 content: `${messageContent} 🤓`
             })
