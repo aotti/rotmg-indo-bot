@@ -313,6 +313,7 @@ async function registerCommands() {
                         }
                     ]
                 },
+                // meme
                 {
                     type: ApplicationCommandOptionType.Subcommand,
                     name: 'nerd',
@@ -325,6 +326,11 @@ async function registerCommands() {
                             required: true
                         }
                     ]
+                },
+                {
+                    type: ApplicationCommandOptionType.Subcommand,
+                    name: 'get_new_fanart',
+                    description: 'Fetch the latest image post from a Twitter/X account every 8 hours'
                 }
             ]
         }
@@ -338,7 +344,7 @@ async function registerCommands() {
             Routes.applicationGuildCommands(process.env.BOT_ID, process.env.GUILD_ID),
             { body: commands }
         )
-        console.log('commands prepared');
+        console.log('commands registered');
     } catch (error) {
         console.log(`there was an error: ${error}`);
     }

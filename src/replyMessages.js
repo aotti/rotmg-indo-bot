@@ -3,14 +3,18 @@ const PlayerCommands = require('./classes/PlayerCommands');
 const MabarCommands = require('./classes/MabarCommands');
 const MiscCommands = require('./classes/MiscCommands');
 const { fetcherWebhook } = require('../helper/fetcher');
+const FanartCommands = require('./classes/FanartCommands');
+
+const fanartCommandStarted = []
 
 async function replyMessage(interact) {
     const discordCommands = new DiscordCommands(interact)
     const playerCommands = new PlayerCommands(interact)
     const mabarCommands = new MabarCommands(interact)
     const miscCommands = new MiscCommands(interact)
+    const fanartCommands = new FanartCommands(interact)
     // reply to user who interacted with slash commands
-    const discordUsername = interact.member.nickname || this.interact.user.displayName
+    const discordUsername = interact.member.nickname || interact.user.displayName
     switch(interact.commandName) {
         case 'greetings':
             console.log(discordUsername, '> starting greetings command');
@@ -87,6 +91,14 @@ async function replyMessage(interact) {
                 case 'nerd': 
                     console.log(discordUsername, '> starting nerd command');
                     miscCommands.nerd()
+                case 'get_new_fanart': 
+                    console.log(discordUsername, '> starting get_new_fanart command');
+                    // check if fanart command is started
+                    if(fanartCommandStarted.length === 0) {
+                        fanartCommandStarted.push(discordUsername)
+                        fanartCommands.getNewFanart()
+                    }
+                    else await interact.reply({ content: `${fanartCommandStarted[0]} already run this command` })
             }
             break
     }

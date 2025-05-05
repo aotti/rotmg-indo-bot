@@ -11,9 +11,11 @@
     "dependencies": {
         "@devraelfreeze/discordjs-pagination": "^2.7.6",
         "@supabase/supabase-js": "^2.39.0",
+        "@upstash/redis": "^1.34.8",
         "discord.js": "^14.14.1",
         "dotenv": "^16.3.1",
-        "graveyard-scrape": "^2.0.0"
+        "graveyard-scrape": "^2.0.0",
+        "twitter-api-v2": "^1.22.0"
     },
     "devDependencies": {
         "nodemon": "^3.0.1"
