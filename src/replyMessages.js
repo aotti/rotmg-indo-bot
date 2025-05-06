@@ -97,6 +97,8 @@ async function replyMessage(interact) {
                     if(fanartCommandStarted.length === 0) {
                         fanartCommandStarted.push(discordUsername)
                         fanartCommands.getNewFanart()
+                        // reset fanart command started
+                        .then(result => result == 'fanart done' ? fanartCommandStarted.pop() : null)
                     }
                     else await interact.reply({ content: `${fanartCommandStarted[0]} already run this command` })
             }
