@@ -330,7 +330,12 @@ async function registerCommands() {
                 {
                     type: ApplicationCommandOptionType.Subcommand,
                     name: 'get_new_fanart',
-                    description: 'Fetch the latest image post from a Twitter/X account every 8 hours'
+                    description: 'fetch the latest image post from a Twitter/X account every 8 hours'
+                },
+                {
+                    type: ApplicationCommandOptionType.Subcommand,
+                    name: 'get_posted_fanart',
+                    description: 'get list of posted fanart'
                 }
             ]
         }

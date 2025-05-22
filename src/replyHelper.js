@@ -78,6 +78,11 @@ function checkAdmin(userId) {
     return process.env.INDOG_FOUNDER.split('.').indexOf(userId)
 }
 
+function checkDeveloper(userId) {
+    const getDevelopers = process.env.INDOG_FOUNDER.split('.').slice(0, 2)
+    return getDevelopers.indexOf(userId)
+}
+
 function filterObjectValues(obj) {
     const tempObj = {}
     for(let [key, value] of Object.entries(obj)) {
@@ -114,6 +119,7 @@ module.exports = {
     setReplyContent,
     replyPagination,
     checkAdmin,
+    checkDeveloper,
     filterObjectValues,
     resultHandler
 }

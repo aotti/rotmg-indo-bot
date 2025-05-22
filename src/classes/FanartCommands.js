@@ -1,11 +1,18 @@
 const { TwitterApi } = require("twitter-api-v2");
 const { fetcherWebhook, fetcherNotLocal } = require("../../helper/fetcher");
+const { checkDeveloper } = require("../replyHelper");
 
 class FanartCommands {
     constructor(interact) {
         this.interact = interact
-        this.twitterClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN)
+        this.twitterClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN_2)
         this.redisClient = require('../../database/redis')
+    }
+
+    async postedFanart() {
+        // get posted fanart list
+        const getPostedFanarts = await this.redisClient.get('rotmgIndoFanart')
+        console.log(getPostedFanarts);
     }
 
     getNewFanart() {
@@ -15,8 +22,12 @@ class FanartCommands {
             const tweetAmount = 5
             const fanartHours = 4
             const fanartInterval = fanartHours * (3_600 * 1e3)
+            await this.interact.deferReply();
             try {
-                await this.interact.deferReply();
+                // only developer can run
+                if(checkDeveloper(this.interact.user.id) === -1) {
+                    return await this.interact.editReply({ content: `only developer 💀` })
+                }
                 // set fanart channel
                 const fanartChannel = await this.interact.client.channels.fetch(process.env.FANART_CHANNEL)
                 // get author list
@@ -32,31 +43,37 @@ class FanartCommands {
                 const [fetchAuthorList] = await fetcherNotLocal(getMessagesURL, fetchAuthorListOptions)
                 // get author list
                 const authorUsernameList = fetchAuthorList.content.split(',')
-                // set first fanart
-                await this.#postFanart(fanartChannel, authorUsernameList[0], tweetAmount)   
-                // remove author after post the fanart
-                authorUsernameList.shift()         
 
                 // ### COMMAND UNTUK MEMATIKAN FITUR
                 // return await this.interact.editReply({ content: `tidak boleh ngabisin limit orang lain :juri:` })
+                // set first fanart
+                await this.#postFanart(fanartChannel, authorUsernameList[0], tweetAmount)   
+                // remove author after post the fanart
+                authorUsernameList.shift() 
                 // post fanart every 8 hours
                 fanartPosting = setInterval(async () => {
+                    // post fanart
+                    await this.#postFanart(fanartChannel, authorUsernameList[0], tweetAmount)
+                    // remove author after post the fanart
+                    authorUsernameList.shift()
+                    // stop getting fanart if theres no more author
                     if(authorUsernameList.length === 0) {
                         clearInterval(fanartPosting)
                         await fanartChannel.send({ content: 'no more fanart today 😭' })
                         return resolve('fanart done')
                     }
-                    // post fanart
-                    await this.#postFanart(fanartChannel, authorUsernameList[0], tweetAmount)
-                    // remove author after post the fanart
-                    authorUsernameList.shift()
                 }, fanartInterval);
                 // fanart interval started
-                return await this.interact.editReply({ content: `getting new fanart every ${fanartHours} hours\n` })
+                return await this.interact.editReply({ content: `getting new fanart every ${fanartHours} hours` })
             } catch (error) {
                 // stop fanart post on error
                 fanartPosting ? clearInterval(fanartPosting) : null
                 console.log(error);
+                // free tier usage cap exceed
+                if(error.data?.title.match(/usagecap/i)) 
+                    await this.interact.editReply({ content: `elon pepek pelit` })
+                else if(error.data.title.match(/too many requests/i))
+                    await this.interact.editReply({ content: `try again later` })
                 await fetcherWebhook(this.interact.commandName, error)
             }
         })
@@ -107,7 +124,7 @@ class FanartCommands {
         // send fanart to discord
         await fanartChannel.send({ content: fanartContent })
         // save tweet id to redis
-        await this.redisClient.set('rotmgIndoFanart', [`${filteredAuthorTimeline[0].id}`])
+        await this.redisClient.set('rotmgIndoFanart', [...getPostedFanarts, `${filteredAuthorTimeline[0].id}`])
     }
 }
 

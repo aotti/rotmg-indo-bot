@@ -91,6 +91,11 @@ async function replyMessage(interact) {
                 case 'nerd': 
                     console.log(discordUsername, '> starting nerd command');
                     miscCommands.nerd()
+                    break
+                case 'get_posted_fanart':
+                    console.log(discordUsername, '> starting get_posted_fanart command');
+                    fanartCommands.postedFanart()
+                    break
                 case 'get_new_fanart': 
                     console.log(discordUsername, '> starting get_new_fanart command');
                     // check if fanart command is started
@@ -98,9 +103,15 @@ async function replyMessage(interact) {
                         fanartCommandStarted.push(discordUsername)
                         fanartCommands.getNewFanart()
                         // reset fanart command started
-                        .then(result => result == 'fanart done' ? fanartCommandStarted.pop() : null)
+                        .then(result => {
+                            if(result == 'fanart done') {
+                                fanartCommandStarted.pop()
+                                console.log(result)
+                            }
+                        })
                     }
                     else await interact.reply({ content: `${fanartCommandStarted[0]} already run this command` })
+                    break
             }
             break
     }
