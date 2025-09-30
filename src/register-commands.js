@@ -32,6 +32,26 @@ async function registerCommands() {
                     name: 'discord_unlink',
                     description: 'unlink discord username from rotmg username'
                 },
+                // get player data from web scraping
+                {
+                    type: ApplicationCommandOptionType.Subcommand,
+                    name: 'player_sync',
+                    description: 'get player data from web then update to db (ADMIN ONLY)',
+                    options: [
+                        {
+                            type: ApplicationCommandOptionType.Integer,
+                            name: 'start',
+                            description: 'player id start at (eg: 0)',
+                            required: true
+                        },
+                        {
+                            type: ApplicationCommandOptionType.Integer,
+                            name: 'end',
+                            description: 'player id end at (eg: 10)',
+                            required: true
+                        }
+                    ]
+                },
                 // get all player
                 {
                     type: ApplicationCommandOptionType.Subcommand,

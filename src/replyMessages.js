@@ -30,74 +30,79 @@ async function replyMessage(interact) {
             break
         // main command
         case 'indog':
-            switch(interact.options.getSubcommand()) {
+            const subCommand = interact.options.getSubcommand()
+            switch(subCommand) {
                 // sub command
                 case 'discord_link':
-                    console.log(discordUsername, '> starting discord_link command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     discordCommands.discord_link()
                     break
                 case 'discord_unlink':
-                    console.log(discordUsername, '> starting discord_unlink command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     discordCommands.discord_unlink()
                     break
+                case 'player_sync':
+                    console.log(discordUsername, `> starting ${subCommand} command`);
+                    playerCommands.player_sync()
+                    break
                 case 'player_all':
-                    console.log(discordUsername, '> starting player_all command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     playerCommands.player_all()
                     break
                 case 'player_search':
-                    console.log(discordUsername, '> starting player_search command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     playerCommands.player_search()
                     break
                 case 'player_notlocal':
-                    console.log(discordUsername, '> starting player_notlocal command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     playerCommands.player_notlocal()
                     break
                 case 'player_deaths': 
-                    console.log(discordUsername, '> starting player_deaths command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     playerCommands.player_deaths()
                     break
                 case 'player_death_alarm': 
-                    console.log(discordUsername, '> starting player_deaths command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     playerCommands.player_death_alarm()
                     break
                 case 'player_insert':
-                    console.log(discordUsername, '> starting player_insert command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     playerCommands.player_insert()
                     break
                 case 'player_edit':
-                    console.log(discordUsername, '> starting player_edit command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     playerCommands.player_edit()
                     break
                 case 'mabar_check':
-                    console.log(discordUsername, '> starting mabar_check command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     mabarCommands.mabar_check()
                     break
                 case 'mabar_set':
-                    console.log(discordUsername, '> starting mabar_set command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     mabarCommands.mabar_set()
                     break
                 case 'mabar_edit':
-                    console.log(discordUsername, '> starting mabar_edit command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     mabarCommands.mabar_edit()
                     break
                 case 'wawan_ping':
-                    console.log(discordUsername, '> starting wawan_ping command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     miscCommands.wawan_ping()
                     break
                 case 'weather':
-                    console.log(discordUsername, '> starting weather command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     miscCommands.weather()
                     break
                 case 'nerd': 
-                    console.log(discordUsername, '> starting nerd command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     miscCommands.nerd()
                     break
                 case 'get_posted_fanart':
-                    console.log(discordUsername, '> starting get_posted_fanart command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     fanartCommands.postedFanart()
                     break
                 case 'get_new_fanart': 
-                    console.log(discordUsername, '> starting get_new_fanart command');
+                    console.log(discordUsername, `> starting ${subCommand} command`);
                     // check if fanart command is started
                     if(fanartCommandStarted.length === 0) {
                         fanartCommandStarted.push(discordUsername)

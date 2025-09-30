@@ -70,6 +70,16 @@ function updateData(query) {
     return updateDataToDB()
 }
 
+function callFunction(query) {
+    if(supabase == null)
+        return console.log('cannot connect to database');
+    const callFunctionToDB = async () => {
+        const {data, error} = await supabase.rpc(query.function_name, query.function_params)
+        return {data: data, error: error}
+    }
+    return callFunctionToDB()
+}
+
 function queryBuilder(table, selectColumn, whereColumn = null, whereValue = null, action = null, orderBy = null) {
     const qb = {}
     // target table
@@ -81,7 +91,7 @@ function queryBuilder(table, selectColumn, whereColumn = null, whereValue = null
         switch(+col) {
             // table players
             case 1: choosenColumns.push('username, discord_id'); break
-            case 2: choosenColumns.push('alias'); break
+            case 2: choosenColumns.push('alias, rank, guild, account_created, last_seen'); break
             case 3: choosenColumns.push('death'); break
             // table schedules
             case 4: choosenColumns.push('title'); break
@@ -128,5 +138,6 @@ module.exports = {
     selectOne,
     insertDataRow,
     updateData,
+    callFunction,
     queryBuilder
 }

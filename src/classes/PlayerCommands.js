@@ -1,11 +1,148 @@
-const { EmbedBuilder } = require("discord.js")
-const { queryBuilder, selectAll, selectOne, updateData, insertDataRow } = require("../../database/databaseQueries")
+const { EmbedBuilder, MessageFlags } = require("discord.js")
+const { queryBuilder, selectAll, selectOne, updateData, insertDataRow, callFunction } = require("../../database/databaseQueries")
 const { fetcherRealmEye, fetcherNotLocal, fetcherWebhook } = require("../../helper/fetcher")
 const { resultHandler, replyPagination, setReplyContent, checkAdmin, filterObjectValues } = require("../replyHelper")
 
 class PlayerCommands {
     constructor(interact) {
         this.interact = interact
+    }
+
+    async player_sync() {
+        try {
+            // defer message until the fetch done
+            await this.interact.deferReply({ flags: MessageFlags.Ephemeral })
+            // check if user is admin
+            if(checkAdmin(this.interact.user.id) === -1) {
+                // not admin
+                return await this.interact.editReply({ content: 'Hanya **ADMIN** yang bisa menjalankan command ini.', flags: MessageFlags.Ephemeral })
+            }
+            else {
+                const cheerio = require('cheerio');
+                // get inputs 
+                const inputs = {
+                    start: +this.interact.options.get('start')?.value,
+                    end: +this.interact.options.get('end')?.value
+                }
+                // check start + end gap
+                const startEndGap = inputs.end - inputs.start
+                if(startEndGap > 20) {
+                    return await this.interact.editReply({ content: `maksimal 20 data (si donggo ${startEndGap})`, flags: MessageFlags.Ephemeral })
+                }
+                // get all player data
+                const query = queryBuilder('players', 1)
+                const selectQuery = await selectAll(query)
+                // check if the result is error / not found
+                if(await resultHandler(this.interact, selectQuery)) return
+                
+                // slice output with start + end inputs
+                const playerSlicedArray = selectQuery.data.slice(inputs.start, inputs.end)
+                const playerUpdateList = playerSlicedArray.map(v => v.username)
+                const playerUpdateListText = () => {
+                    // only modify if update player > 10
+                    if(playerUpdateList.length > 10) {
+                        const [puList_1, puList_2] = [playerUpdateList.slice(0, 10), playerUpdateList.slice(10)]
+                        const tempPlayerUpdateList = []
+                        for(let i=0; i<10; i++) {
+                            puList_2[i] 
+                                ? tempPlayerUpdateList.push(`${puList_1[i]}..........${puList_2[i]}`)
+                                : tempPlayerUpdateList.push(`${puList_1[i]}..........`)
+                        } 
+                        return tempPlayerUpdateList.join('\n')
+                    }
+                    // update player <= 10
+                    return playerUpdateList.join('\n')
+                }
+                // show players who will get update
+                await this.interact.editReply({ content: `player yang akan mendapat update\n${playerUpdateListText()}`, flags: MessageFlags.Ephemeral })
+                
+                // get player data from webscraping
+                const playerContainer = []
+                for(let player of playerSlicedArray) {
+                    // const playerData = await cheerio.fromURL(`https://www.realmeye.com/player/${player.username}`)
+                    const playerData = await (await fetch(`https://www.realmeye.com/player/${player.username}`)).text()
+                    const playerHTMLData = cheerio.load(playerData)
+                    const getHTMLData = ($) => {
+                        const playerObject = {
+                            username: player.username,
+                            status: null,
+                            rank: null,
+                            guild: null,
+                            first_seen: null,
+                            last_seen: null,
+                        }
+                        // get player info table
+                        const playerInfo = $('.summary')[0]
+                        if(!playerInfo) {
+                            playerObject.status = 'quit'
+                            return playerObject
+                        }
+                        // loop table row
+                        const tableRows = playerInfo.children[0].children
+                        for(let i=0; i<tableRows.length; i++) {
+                            // loop table cell
+                            const tableCols = tableRows[i].children
+                            for(let cell of tableCols) {
+                                // get player info
+                                const element = cell.children
+                                const textContent = cell.children[0]?.data
+                                
+                                switch(i) {
+                                    case 0: // characters, no children
+                                        playerObject.status = +textContent > 0 ? 'aktif' : 'quit'
+                                        break
+                                    case 4: // rank, element[0].children[0]
+                                        playerObject.rank = element[0].children ? element[0].children[0].data : null
+                                        break
+                                    case 6: // guild, element[0].children[0]
+                                        playerObject.guild = element[0].children ? element[0].children[0].data : null
+                                        break
+                                    case 8: // first seen, no children
+                                        playerObject.first_seen = textContent
+                                        break
+                                    case 9: // last seen, element[1]
+                                        playerObject.last_seen = element[1]?.data.trim()
+                                        break
+                                }
+                            }
+                        }
+                        // return player data
+                        return playerObject
+                    }
+                    playerContainer.push(getHTMLData(playerHTMLData))
+                }
+                
+                // modify player container data
+                const playerUsernames = playerContainer.map(v => v.username).join(';')
+                const playerStatuses = playerContainer.map(v => v.status).join(';')
+                const playerRanks = playerContainer.map(v => v.rank).join(';')
+                const playerGuilds = playerContainer.map(v => v.guild).join(';')
+                const playerFirstSeens = playerContainer.map(v => v.first_seen).join(';')
+                const playerLastSeens = playerContainer.map(v => v.last_seen).join(';')
+                // update player data di database
+                const updateObj = {
+                    function_name: 'rotmg_update_players',
+                    function_params: {
+                        tmp_username: playerUsernames,
+                        tmp_status: playerStatuses,
+                        tmp_rank: playerRanks,
+                        tmp_guild: playerGuilds,
+                        tmp_first_seen: playerFirstSeens,
+                        tmp_last_seen: playerLastSeens,
+                        tmp_amount: playerUpdateList.length,
+                    }
+                }
+                const updateQuery = await callFunction(updateObj)
+                // check if the result is error / not found
+                if(await resultHandler(this.interact, updateQuery)) return
+                // set success response
+                return await this.interact.followUp({ content: `${startEndGap} data player berhasil di update`, flags: MessageFlags.Ephemeral })
+            }
+            // defer reply
+        } catch (error) {
+            console.log(error);
+            await fetcherWebhook(this.interact.commandName, error)
+        }
     }
 
     async player_all() {
