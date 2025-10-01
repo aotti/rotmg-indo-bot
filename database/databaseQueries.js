@@ -91,7 +91,7 @@ function queryBuilder(table, selectColumn, whereColumn = null, whereValue = null
         switch(+col) {
             // table players
             case 1: choosenColumns.push('username, discord_id'); break
-            case 2: choosenColumns.push('alias, rank, guild, account_created, last_seen'); break
+            case 2: choosenColumns.push('alias, rank, guild, first_seen, last_seen'); break
             case 3: choosenColumns.push('death'); break
             // table schedules
             case 4: choosenColumns.push('title'); break

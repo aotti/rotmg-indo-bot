@@ -18,8 +18,8 @@ function setReplyContent(type, data) {
         "`alias    :` " + data.alias + "\n" +
         "`rank     :` " + data.rank + "\n" +
         "`guild    :` " + data.guild + "\n" +
-        "`created  :` " + data.created + "\n" +
-        "`last seen:` " + data.lastSeen + "\n" +
+        "`created  :` " + data.first_seen + "\n" +
+        "`last seen:` " + data.last_seen + "\n" +
         "`ded alarm:` " + (data.death ? "ON" : "OFF") + "\n" +
         "`status   :` " + data.status
         return contentBody

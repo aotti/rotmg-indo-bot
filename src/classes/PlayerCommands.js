@@ -150,7 +150,7 @@ class PlayerCommands {
             // defer message until the fetch done
             await this.interact.deferReply({ ephemeral: true })
     
-            const query = queryBuilder('players', 1)
+            const query = queryBuilder('players', 129)
             // get all player data
             const selectQuery = await selectAll(query)
             // check if the result is error / not found
@@ -165,13 +165,13 @@ class PlayerCommands {
             }
             // input all status & username to array
             for(let i in selectQuery.data) {
-                // get realmeye api https://realmeye-api.glitch.me/player/[Player_Name]
-                const realmAPIEndpoint = `https://realmeye-api.glitch.me/player/${selectQuery.data[i].username}`
-                const realmAPIResult = await fetcherRealmEye(realmAPIEndpoint, fetchOptions, false)
-                playersArr.push(`${+i+1}. [${realmAPIResult.status}] ${selectQuery.data[i].username}`)
+                const activeStatus = selectQuery.data[i].status == 'aktif' 
+                                    ? `**${selectQuery.data[i].status}**` 
+                                    : selectQuery.data[i].status
+                playersArr.push(`${+i+1}. [${activeStatus}] ${selectQuery.data[i].username}`)
             }
             // get all active players
-            const activePlayers = playersArr.map(v => { return v.match('aktif') }).filter(i => i).length
+            const activePlayers = selectQuery.data.map(v => v.status == 'aktif' ? v : null).filter(i => i).length
             // get all linked players
             const linkedPlayers = selectQuery.data.map(v => v.discord_id && v.discord_id.length > 0).filter(i => i).length
             // slice materials
@@ -206,6 +206,7 @@ class PlayerCommands {
                     const fieldValue = Object.values(playersObj)
                     embedContent.addFields({ 
                         // set field title every multiple of embedFiels
+                        // note: '** **' equal to null
                         name: embedCounter % embedFields === 0 ? `[status] Username` : '** **', 
                         value: fieldValue[embedCounter] != null ? fieldValue[embedCounter].join('\n') : '** **', 
                         inline: true 
@@ -234,19 +235,12 @@ class PlayerCommands {
             // get player input value
             const inputUsername = this.interact.options.get('username').value.toLowerCase()
             // find player query
-            const query = queryBuilder('players', 123, 'username', inputUsername)
+            const query = queryBuilder('players', 1239, 'username', inputUsername)
             // get data
             const selectQuery = await selectOne(query)
             // check if the result is error / not found
             if(await resultHandler(this.interact, selectQuery, inputUsername)) return
-            // fetch options
-            const fetchOptions = {
-                method: 'GET',
-                cache: "force-cache"
-            }
-            // get realmeye api https://realmeye-api.glitch.me/player/[Player_Name]
-            const realmAPIEndpoint = `https://realmeye-api.glitch.me/player/${selectQuery.data[0].username}`
-            const realmAPIResult = await fetcherRealmEye(realmAPIEndpoint, fetchOptions)
+            
             // get discord members
             const guildMembers = await this.interact.guild.members.list({ limit: 100 })
             for(let member of guildMembers) {
@@ -269,12 +263,8 @@ class PlayerCommands {
                         if(v.discord_id === selectQuery.data[0].discord_id) 
                             return v
                     }).filter(i => i)[0]
-                    // remove username from db IF username from API is exist
-                    if(realmAPIResult) delete selectQuery.data[0].username
                     // merge data from db AND realm api
                     const replyObj = {
-                        // data from api
-                        ...realmAPIResult,
                         // data from db
                         ...selectQuery.data[0],
                         // data from discord username
