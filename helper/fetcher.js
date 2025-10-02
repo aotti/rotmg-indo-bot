@@ -1,39 +1,5 @@
 const { weatherMonthNames, weatherEmoji } = require("./weatherChoices")
 
-function fetcherRealmEye(url, options, singleData = true) {
-    return fetch(url, options)
-    .then(data => { return data.json() })
-    .then(realmeye => {
-        // check if ProfileInfo exists
-        const checkProfileInfo = realmeye.error == null
-        if(singleData) {
-            // data from api
-            const { PlayerName, Rank, Guild, Created, FirstSeen, LastSeen } = realmeye.ProfileInfo
-            // set reply message
-            const api_resultObj = {
-                username: PlayerName,
-                rank: `${Rank} ☆`,
-                guild: Guild,
-                created: FirstSeen || Created,
-                lastSeen: LastSeen,
-                // prevent error from hidden profile on realmeye
-                status: checkProfileInfo && +realmeye?.ProfileInfo.Fame.split(' ')[0] > 0 ? 'aktif' : 'quit'
-            }
-            return api_resultObj
-        }
-        else {
-            // set reply message
-            const api_resultObj = {
-                // data from api
-                // prevent error from hidden profile on realmeye
-                status: checkProfileInfo && +realmeye?.ProfileInfo.Fame.split(' ')[0] > 0 ? '**aktif**' : 'quit'
-            }
-            return api_resultObj
-        }
-    })
-    .catch(err => console.log(`realmeyeAPI error: ${err}`))
-}
-
 function fetcherNotLocal(url, options) {
     return fetch(url, options)
     .then(data => data.json())
@@ -163,7 +129,6 @@ function fetcherWeather(url, options, type) {
 }
 
 module.exports = {
-    fetcherRealmEye,
     fetcherNotLocal,
     fetcherManageRole,
     fetcherWebhook,

@@ -54,23 +54,24 @@ class PlayerCommands {
                     return playerUpdateList.join('\n')
                 }
                 // show players who will get update
-                await this.interact.editReply({ content: `player yang akan mendapat update\n${playerUpdateListText()}`, flags: MessageFlags.Ephemeral })
+                await this.interact.editReply({ content: `**player yang akan mendapat update:**\n${playerUpdateListText()}`, flags: MessageFlags.Ephemeral })
                 
                 // get player data from webscraping
                 const playerContainer = []
                 for(let player of playerSlicedArray) {
+                    const playerObject = {
+                        username: player.username,
+                        status: null,
+                        rank: null,
+                        guild: null,
+                        first_seen: null,
+                        last_seen: null,
+                    }
                     // const playerData = await cheerio.fromURL(`https://www.realmeye.com/player/${player.username}`)
                     const playerData = await (await fetch(`https://www.realmeye.com/player/${player.username}`)).text()
                     const playerHTMLData = cheerio.load(playerData)
                     const getHTMLData = ($) => {
-                        const playerObject = {
-                            username: player.username,
-                            status: null,
-                            rank: null,
-                            guild: null,
-                            first_seen: null,
-                            last_seen: null,
-                        }
+                        const tempPlayerObject = []
                         // get player info table
                         const playerInfo = $('.summary')[0]
                         if(!playerInfo) {
@@ -86,30 +87,50 @@ class PlayerCommands {
                                 // get player info
                                 const element = cell.children
                                 const textContent = cell.children[0]?.data
-                                
-                                switch(i) {
-                                    case 0: // characters, no children
-                                        playerObject.status = +textContent > 0 ? 'aktif' : 'quit'
-                                        break
-                                    case 4: // rank, element[0].children[0]
-                                        playerObject.rank = element[0].children ? element[0].children[0].data : null
-                                        break
-                                    case 6: // guild, element[0].children[0]
-                                        playerObject.guild = element[0].children ? element[0].children[0].data : null
-                                        break
-                                    case 8: // first seen, no children
-                                        playerObject.first_seen = textContent
-                                        break
-                                    case 9: // last seen, element[1]
-                                        playerObject.last_seen = element[1]?.data.trim()
-                                        break
-                                }
+                                if(textContent)
+                                    tempPlayerObject.push(textContent)
+                                else if(element[0].children[0].data)
+                                    tempPlayerObject.push(element[0].children[0].data)
+                                else if(element[1]?.data)
+                                    tempPlayerObject.push(element[1]?.data.trim())
                             }
                         }
                         // return player data
-                        return playerObject
+                        return tempPlayerObject
                     }
-                    playerContainer.push(getHTMLData(playerHTMLData))
+
+                    const tempPlayerObject = getHTMLData(playerHTMLData)
+                    // group temp player object to array 2 element each
+                    const groupTempPlayerObject = []
+                    for(let i=0; i<tempPlayerObject.length; i+=2) {
+                        groupTempPlayerObject.push([tempPlayerObject[i], tempPlayerObject[i+1]])
+                    }
+                    console.log(groupTempPlayerObject);
+                    
+                    // parse player html data then move to player object
+                    for(let playerData of groupTempPlayerObject) {
+                        switch(playerData[0]) {
+                            case 'Characters': 
+                                playerObject.status = +playerData[1] > 0 ? 'aktif' : 'quit'
+                                break
+                            case 'Rank':
+                                playerObject.rank = playerData[1] ? playerData[1] : 'null'
+                                break
+                            case 'Guild': 
+                                playerObject.guild = playerData[1] ? playerData[1] : 'null'
+                                break
+                            case 'Created': 
+                            case 'First seen': 
+                                playerObject.first_seen = playerData[1] ? playerData[1] : 'null'
+                                break
+                            case 'Last seen': 
+                                playerObject.last_seen = playerData[1] ? playerData[1] : 'null'
+                                break
+                        }
+                    }
+                    console.log(playerObject); 
+                    
+                    playerContainer.push(playerObject)
                 }
                 
                 // modify player container data

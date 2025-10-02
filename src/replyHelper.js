@@ -16,10 +16,10 @@ function setReplyContent(type, data) {
         "~~                                               ~~\n" + 
         "`username :` " + data.username + ` **(${data.discord_username || 'not linked'})**` + "\n" +
         "`alias    :` " + data.alias + "\n" +
-        "`rank     :` " + data.rank + "\n" +
-        "`guild    :` " + data.guild + "\n" +
-        "`created  :` " + data.first_seen + "\n" +
-        "`last seen:` " + data.last_seen + "\n" +
+        "`rank     :` " + (data.rank || null) + "\n" +
+        "`guild    :` " + (data.guild || null) + "\n" +
+        "`created  :` " + (data.first_seen || null) + "\n" +
+        "`last seen:` " + (data.last_seen || null) + "\n" +
         "`ded alarm:` " + (data.death ? "ON" : "OFF") + "\n" +
         "`status   :` " + data.status
         return contentBody
