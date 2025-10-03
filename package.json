@@ -15,7 +15,6 @@
         "cheerio": "^1.1.2",
         "discord.js": "^14.14.1",
         "dotenv": "^16.3.1",
-        "graveyard-scrape": "^2.0.0",
         "twitter-api-v2": "^1.22.0"
     },
     "devDependencies": {

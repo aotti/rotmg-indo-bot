@@ -64,6 +64,8 @@ function fetcherWeather(url, options, type) {
     return fetch(url, options)
     .then(data => { return data.json() })
     .then(result => {
+        console.log(result);
+        
         // get result based on api type
         const { name, region } = result.location
         // 1-day weather report
@@ -128,10 +130,45 @@ function fetcherWeather(url, options, type) {
     .catch(err => console.log(`weatherAPI error: ${err}`))
 }
 
+function fetchGraveyards(url, options) {
+    return fetch(url, options)
+    .then(data => {return data.text()})
+    .then(result => {
+        const cheerio = require('cheerio');
+        const graveyardHTMLData = cheerio.load(result)
+        const getHTMLData = ($) => {
+            const tempGraveyardData = []
+            // graveyard table
+            const graveyardInfo = $('.tablesorter')[0]
+            if(!graveyardInfo) return []
+            // slice graveyard to 6 graves
+            const graveyardList = graveyardInfo.children[1]
+            const slicedGraveyardList = graveyardList.children.slice(0, 6)
+            // get graveyard detail
+            for(let grave of slicedGraveyardList) {
+                const data = grave.children
+                const graveyardObject = {
+                    death_date: data[0].children[0].data,
+                    class: data[2].children[0].data,
+                    base_fame: data[4].children[0].data,
+                    total_fame: data[5].children[0].children[0].data,
+                    death_stats: data[8].children[0].children[0].data,
+                    killed_by: data[9].children[0].data
+                }
+                tempGraveyardData.push(graveyardObject)
+            }
+            return tempGraveyardData
+        }
+        const graveyardData = getHTMLData(graveyardHTMLData)
+        return graveyardData
+    })
+}
+
 module.exports = {
     fetcherNotLocal,
     fetcherManageRole,
     fetcherWebhook,
     fetcherReminder,
-    fetcherWeather
+    fetcherWeather,
+    fetchGraveyards
 }

@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require("discord.js");
 const { queryBuilder, selectOne, selectAll } = require("../database/databaseQueries");
 const { indonesiaDate, convertTime12to24 } = require("../helper/dateTime");
-const { fetcherReminder, fetcherWebhook } = require("../helper/fetcher");
+const { fetcherReminder, fetcherWebhook, fetchGraveyards } = require("../helper/fetcher");
 const regCommands = require('./register-commands')
 
 async function greetingsReminder(bot) {
@@ -152,24 +152,26 @@ async function deathReminder(bot, selectDeaths) {
         // get player data success
         else if(selectDeaths.error === null) {
             // get player graveyard
-            const scrape = require('graveyard-scrape').scrapeGraveyard
             // death embed
-            const deathsEmbed = new EmbedBuilder()
+            const graveyardListEmbed = new EmbedBuilder()
                 .setTitle('Latest Indog Deaths')
                 .setDescription('daftar player yang meninggal hari ini :skull:')
+                .setTimestamp()
             // player list
-            const deathPlayers = []
+            const playerGraves = []
             // graveyard counter
             let deathCounter = 0
             const dateNow = new Date().toLocaleDateString()
             for(let death of selectDeaths.data) {
-                const playerGrave = await scrape(death.username, 2)
+                // get graveyard data
+                const graveyardUrl = `https://www.realmeye.com/graveyard-of-player/${death.username}`
+                const graveyards = await fetchGraveyards(graveyardUrl, null)
                 // is graveyard private
-                const isGravePrivate = playerGrave.length > 0 ? '✅' : '🔒'
-                deathPlayers.push(`${isGravePrivate} ${death.username}`)
+                const isGravePrivate = graveyards.length > 0 ? '✅' : '🔒'
+                playerGraves.push(`${isGravePrivate} ${death.username}`)
                 // check graveyard date
-                for(let grave of playerGrave) {
-                    if(playerGrave.length > 0 && new Date(grave.death_date).toLocaleDateString() === dateNow) {
+                for(let grave of graveyards) {
+                    if(graveyards.length > 0 && new Date(grave.death_date).toLocaleDateString() === dateNow) {
                         deathCounter++
                         // death info
                         const deathInfo = `**class:** ${grave.class}
@@ -177,7 +179,7 @@ async function deathReminder(bot, selectDeaths) {
                                             **base:** ${grave.base_fame} Fame
                                             **total:** ${grave.total_fame} Fame
                                             **killed by:** ${grave.killed_by}`
-                        deathsEmbed.addFields({
+                        graveyardListEmbed.addFields({
                             name: death.username,
                             value: deathInfo,
                             inline: true
@@ -185,21 +187,20 @@ async function deathReminder(bot, selectDeaths) {
                     }
                 }
             }
-            deathsEmbed.setTimestamp()
             // split player list
             const splitDeathPlayers = []
             const splitBase = 5
-            const splitCounter = Math.ceil(deathPlayers.length / splitBase)
+            const splitCounter = Math.ceil(playerGraves.length / splitBase)
             for(let i=0; i<splitCounter; i++) {
                 const [sliceMin, sliceMax] = [i * splitBase, (i+1) * splitBase]
-                splitDeathPlayers.push(deathPlayers.slice(sliceMin, sliceMax))
+                splitDeathPlayers.push(playerGraves.slice(sliceMin, sliceMax))
             }
             // player list embed
-            const deathPlayersEmbed = new EmbedBuilder()
+            const playerListEmbed = new EmbedBuilder()
                 .setTitle('Graveyard Status')
                 .setDescription('🔒 - private | ✅ - public')
             for(let i in splitDeathPlayers) {
-                deathPlayersEmbed.addFields({
+                playerListEmbed.addFields({
                     name: i == 0 ? 'Player List' : '** **',
                     value: splitDeathPlayers[i].join('\n'),
                     inline: true
@@ -209,18 +210,18 @@ async function deathReminder(bot, selectDeaths) {
             // ### EMBED 1 = PLAYER LIST | EMBED 2 = GRAVE LIST
             // if no one died graveyard
             if(deathCounter === 0) {
-                deathsEmbed.addFields({
+                graveyardListEmbed.addFields({
                     name: `Tidak ada yang meninggal hari ini :sob:`,
                     value: 'kalo mau graveyard klean muncul di daily reminder, run command **`/death_alarm`** tapi graveyard klean harus public di realmeye 💀 '
                 })
                 return await channel.send({ 
-                    embeds: [deathPlayersEmbed, deathsEmbed], 
+                    embeds: [playerListEmbed, graveyardListEmbed], 
                     flags: '4096' 
                 })
             }
             // send embed
             await channel.send({ 
-                embeds: [deathPlayersEmbed, deathsEmbed], 
+                embeds: [playerListEmbed, graveyardListEmbed], 
                 flags: '4096' 
             })
         }

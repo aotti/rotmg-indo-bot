@@ -1,7 +1,8 @@
 const { EmbedBuilder, MessageFlags } = require("discord.js")
 const { queryBuilder, selectAll, selectOne, updateData, insertDataRow, callFunction } = require("../../database/databaseQueries")
-const { fetcherRealmEye, fetcherNotLocal, fetcherWebhook } = require("../../helper/fetcher")
+const { fetcherRealmEye, fetcherNotLocal, fetcherWebhook, fetchGraveyards } = require("../../helper/fetcher")
 const { resultHandler, replyPagination, setReplyContent, checkAdmin, filterObjectValues } = require("../replyHelper")
+const cheerio = require('cheerio');
 
 class PlayerCommands {
     constructor(interact) {
@@ -18,7 +19,6 @@ class PlayerCommands {
                 return await this.interact.editReply({ content: 'Hanya **ADMIN** yang bisa menjalankan command ini.', flags: MessageFlags.Ephemeral })
             }
             else {
-                const cheerio = require('cheerio');
                 // get inputs 
                 const inputs = {
                     start: +this.interact.options.get('start')?.value,
@@ -105,8 +105,6 @@ class PlayerCommands {
                     for(let i=0; i<tempPlayerObject.length; i+=2) {
                         groupTempPlayerObject.push([tempPlayerObject[i], tempPlayerObject[i+1]])
                     }
-                    console.log(groupTempPlayerObject);
-                    
                     // parse player html data then move to player object
                     for(let playerData of groupTempPlayerObject) {
                         switch(playerData[0]) {
@@ -128,8 +126,6 @@ class PlayerCommands {
                                 break
                         }
                     }
-                    console.log(playerObject); 
-                    
                     playerContainer.push(playerObject)
                 }
                 
@@ -311,11 +307,11 @@ class PlayerCommands {
             const inputDisplay = this.interact.options.get('display')?.value
             // defer reply
             if(inputDisplay == null) await this.interact.deferReply({ flags: '4096' })
-            else await this.interact.deferReply({ ephemeral: true })
+            else await this.interact.deferReply({ flags: '64' })
     
-            // graveyard module
-            const scrape = require('graveyard-scrape').scrapeGraveyard
-            const graveyards = await scrape(inputUsername, 6)
+            // get graveyard data
+            const graveyardUrl = `https://www.realmeye.com/graveyard-of-player/${inputUsername}`
+            const graveyards = await fetchGraveyards(graveyardUrl, null)
             if(graveyards.length === 0) {
                 // reply interact
                 return await this.interact.followUp({ content: `player **${inputUsername}** could be private / doesnt exist :skull:` })
@@ -327,13 +323,13 @@ class PlayerCommands {
             // add fields
             for(let i in graveyards) {
                 const graveDate = new Date(graveyards[i].death_date).toLocaleDateString('id')
-                const graveTitle = `${graveyards[i].class} (${graveDate}) ${i == 5 ? ':nerd:' : ''}`
+                const graveClass = `${graveyards[i].class} (${graveDate}) ${i == 0 ? ':nerd:' : ''}`
                 const graveDetails = `**stats:** ${graveyards[i].death_stats}
                                     **base:** ${graveyards[i].base_fame} Fame
                                     **total:** ${graveyards[i].total_fame} Fame
                                     **killed by:** ${graveyards[i].killed_by}`
                 embedGraves.addFields({
-                    name: (i > 2 ? '───────────────────\n' : '') + graveTitle, 
+                    name: (i > 2 ? '───────────────────\n' : '') + graveClass, 
                     value: graveDetails, 
                     inline: true
                 })

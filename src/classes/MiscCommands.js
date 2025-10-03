@@ -84,7 +84,7 @@ class MiscCommands {
         try {
             const inputDisplay = this.interact.options.get('display')?.value || null
             // defer reply
-            if(inputDisplay == null) await this.interact.deferReply({ ephemeral: true })
+            if(inputDisplay == null) await this.interact.deferReply({ flags: '64' })
             else await this.interact.deferReply({ flags: '4096' })
     
             // user input
@@ -102,6 +102,9 @@ class MiscCommands {
             }
             // get weather api data
             const fetchWeather = await fetcherWeather(weatherEndpoint, fetchOptions, weatherParams.type)
+            if(!fetchWeather) {
+                return await this.interact.editReply({ content: 'entah knp gagal memanggil api, silahkan coba lagi' })
+            }
             // destructure data
             const { perDay, perHour } = fetchWeather
             // ------------- PER DAY STUFF -------------
