@@ -1,12 +1,91 @@
 const { TwitterApi } = require("twitter-api-v2");
 const { fetcherWebhook, fetcherNotLocal } = require("../../helper/fetcher");
 const { checkDeveloper } = require("../replyHelper");
+const { SignJWT, jwtVerify } = require('jose')
 
 class FanartCommands {
+    #twitterClientData
+    #twitterClient
+    #timeoutSecret = new TextEncoder().encode(process.env.TIMEOUT_TOKEN_SECRET)
+
     constructor(interact) {
         this.interact = interact
-        this.twitterClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN_2)
         this.redisClient = require('../../database/redis')
+        // this.twitterClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN_2)
+    }
+    
+    async #checkFanartApiCounter() {
+        const getTwitterClientData = await this.redisClient.get('rotmgIndoFanartCounter')
+        let tempTwitterClientData = null
+        let isChangeToken = false
+        // fanart counter exist
+        if(getTwitterClientData && getTwitterClientData.length > 0) {
+            // loop
+            for(let data of getTwitterClientData) {
+                // change twitter api token if the counter on limit (100 for free tier)
+                if(data.counter >= 100) {
+                    // check timeout token
+                    const isExpired = await jwtVerify(data.timeout_token, this.#timeoutSecret)
+                    // token not expired, turn off fanart token
+                    if(isExpired?.payload) {
+                        data.status = 'off'
+                        isChangeToken = true
+                    }
+                    // token is expired, reset data 
+                    else {
+                        data.counter = 0
+                        data.status = 'on'
+                        data.timeout_token = await this.#generateTimeoutToken(data.name)
+                        tempTwitterClientData = data
+                    }
+                }
+                else if(data.counter < 100) {
+                    // check data status
+                    if(data.status === 'on') {
+                        tempTwitterClientData = data
+                    }
+                    // change token data after the other is turned off
+                    if(data.status === 'off' && isChangeToken) {
+                        data.status = 'on'
+                        tempTwitterClientData = data
+                    }
+                }
+            }
+            // update data to redis
+            await this.redisClient.set('rotmgIndoFanartCounter', getTwitterClientData)
+            return tempTwitterClientData
+        }
+        // fanart counter not exist
+        else {
+            const newFanartCounterData = [
+                {
+                    name: 'fanart_token_1', 
+                    fanart_token: process.env.TWITTER_BEARER_TOKEN_1,
+                    timeout_token: await this.#generateTimeoutToken('fanart_token_1'),
+                    counter: 0,
+                    status: 'on',
+                },
+                {
+                    name: 'fanart_token_2', 
+                    fanart_token: process.env.TWITTER_BEARER_TOKEN_2,
+                    timeout_token: await this.#generateTimeoutToken('fanart_token_2'),
+                    counter: 0,
+                    status: 'off',
+                },
+            ]
+            // save new data to redis
+            await this.redisClient.set('rotmgIndoFanartCounter', newFanartCounterData)
+            return newFanartCounterData
+        }
+    }
+
+    async #generateTimeoutToken(name) {
+        const jwt = await new SignJWT({name})
+                    .setProtectedHeader({ alg: 'HS256' })
+                    .setIssuer('rotmg indo')
+                    .setExpirationTime('30d')
+                    .sign(this.#timeoutSecret)
+        return jwt
     }
 
     async postedFanart() {
@@ -46,6 +125,14 @@ class FanartCommands {
 
                 // ### COMMAND UNTUK MEMATIKAN FITUR
                 // return await this.interact.editReply({ content: `tidak boleh ngabisin limit orang lain :juri:` })
+
+                // check fanart counter before get fanart
+                this.#twitterClientData = await this.#checkFanartApiCounter()
+                // console.log(this.#twitterClientData);
+                // both token are on limit, cannot get fanart
+                if(!this.#twitterClientData) return await this.interact.editReply({ content: `elon pepek pelit` })
+                // initialize twitter client
+                this.#twitterClient = new TwitterApi(this.#twitterClientData.fanart_token)
                 // set first fanart
                 await this.#postFanart(fanartChannel, authorUsernameList[0], tweetAmount)   
                 // remove author after post the fanart
@@ -80,7 +167,7 @@ class FanartCommands {
     }
 
     async getAuthorTimeline(authorId, tweetAmount) {
-        return await this.twitterClient.v2.userTimeline(authorId, {
+        return await this.#twitterClient.v2.userTimeline(authorId, {
             max_results: tweetAmount,
             "tweet.fields": ['attachments', 'entities'],
             expansions: ['attachments.media_keys'],
@@ -91,7 +178,7 @@ class FanartCommands {
     async #postFanart(fanartChannel, authorUsername, tweetAmount) {
         console.log('getting author', authorUsername);
         // find author
-        const author = await this.twitterClient.v2.userByUsername(authorUsername)
+        const author = await this.#twitterClient.v2.userByUsername(authorUsername)
         if(!author.data) return await fanartChannel.send({ content: `author ${authorUsername} not found` })
         // author found
         // get author timeline data
@@ -125,6 +212,12 @@ class FanartCommands {
         await fanartChannel.send({ content: fanartContent })
         // save tweet id to redis
         await this.redisClient.set('rotmgIndoFanart', [...getPostedFanarts, `${filteredAuthorTimeline[0].id}`])
+        // manual twitter api counter
+        const getTwitterClientData = await this.redisClient.get('rotmgIndoFanartCounter')
+        const findTwitterClientData = getTwitterClientData.map(v => v.name).indexOf(this.#twitterClientData.name)
+        getTwitterClientData[findTwitterClientData].counter += 5
+        // update fanart counter to redis
+        await this.redisClient.set('rotmgIndoFanartCounter', getTwitterClientData)
     }
 }
 
