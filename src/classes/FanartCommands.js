@@ -128,11 +128,13 @@ class FanartCommands {
 
                 // check fanart counter before get fanart
                 this.#twitterClientData = await this.#checkFanartApiCounter()
+                const currentTokenCounterText = `${this.#twitterClientData.name}: ${100-this.#twitterClientData.counter} left`
                 // console.log(this.#twitterClientData);
                 // both token are on limit, cannot get fanart
                 if(!this.#twitterClientData) return await this.interact.editReply({ content: `elon pepek pelit` })
                 // initialize twitter client
                 this.#twitterClient = new TwitterApi(this.#twitterClientData.fanart_token)
+                
                 // set first fanart
                 await this.#postFanart(fanartChannel, authorUsernameList[0], tweetAmount)   
                 // remove author after post the fanart
@@ -151,7 +153,9 @@ class FanartCommands {
                     }
                 }, fanartInterval);
                 // fanart interval started
-                return await this.interact.editReply({ content: `getting new fanart every ${fanartHours} hours` })
+                return await this.interact.editReply({
+                    content: `getting new fanart every ${fanartHours} hours\n${currentTokenCounterText}`
+                })
             } catch (error) {
                 // stop fanart post on error
                 fanartPosting ? clearInterval(fanartPosting) : null
