@@ -181,6 +181,9 @@ class FanartCommands {
 
     async #postFanart(fanartChannel, authorUsername, tweetAmount) {
         console.log('getting author', authorUsername);
+        
+        const getTwitterClientData = await this.redisClient.get('rotmgIndoFanartCounter')
+        const findTwitterClientData = getTwitterClientData.map(v => v.name).indexOf(this.#twitterClientData.name)
         // find author
         const author = await this.#twitterClient.v2.userByUsername(authorUsername)
         if(!author.data) return await fanartChannel.send({ content: `author ${authorUsername} not found` })
@@ -197,8 +200,13 @@ class FanartCommands {
         
         // there is no new fanart
         let fanartContent = `there is no new fanart 😭 (${authorUsername})`
-        if(filteredAuthorTimeline.length === 0)
-            return await fanartChannel.send({ content: `${fanartContent}` })
+        if(filteredAuthorTimeline.length === 0) {
+            await fanartChannel.send({ content: `${fanartContent}` })
+            // manual twitter api counter
+            getTwitterClientData[findTwitterClientData].counter += 5
+            // update fanart counter to redis
+            return await this.redisClient.set('rotmgIndoFanartCounter', getTwitterClientData)
+        }
         // get posted fanart list
         const getPostedFanarts = await this.redisClient.get('rotmgIndoFanart')
         console.log('posting fanart');
@@ -217,8 +225,6 @@ class FanartCommands {
         // save tweet id to redis
         await this.redisClient.set('rotmgIndoFanart', [...getPostedFanarts, `${filteredAuthorTimeline[0].id}`])
         // manual twitter api counter
-        const getTwitterClientData = await this.redisClient.get('rotmgIndoFanartCounter')
-        const findTwitterClientData = getTwitterClientData.map(v => v.name).indexOf(this.#twitterClientData.name)
         getTwitterClientData[findTwitterClientData].counter += 5
         // update fanart counter to redis
         await this.redisClient.set('rotmgIndoFanartCounter', getTwitterClientData)
