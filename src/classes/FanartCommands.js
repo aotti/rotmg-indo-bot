@@ -205,7 +205,8 @@ class FanartCommands {
             // manual twitter api counter
             getTwitterClientData[findTwitterClientData].counter += 5
             // update fanart counter to redis
-            return await this.redisClient.set('rotmgIndoFanartCounter', getTwitterClientData)
+            await this.redisClient.set('rotmgIndoFanartCounter', getTwitterClientData)
+            return
         }
         // get posted fanart list
         const getPostedFanarts = await this.redisClient.get('rotmgIndoFanart')
