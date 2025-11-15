@@ -61,14 +61,14 @@ class FanartCommands {
                 {
                     name: 'fanart_token_1', 
                     fanart_token: process.env.TWITTER_BEARER_TOKEN_1,
-                    timeout_token: await this.#generateTimeoutToken('fanart_token_1'),
+                    timeout_token: await this.#generateTimeoutToken('fanart_token_1', '30d'),
                     counter: 0,
                     status: 'on',
                 },
                 {
                     name: 'fanart_token_2', 
                     fanart_token: process.env.TWITTER_BEARER_TOKEN_2,
-                    timeout_token: await this.#generateTimeoutToken('fanart_token_2'),
+                    timeout_token: await this.#generateTimeoutToken('fanart_token_2', '30d'),
                     counter: 0,
                     status: 'off',
                 },
@@ -79,11 +79,11 @@ class FanartCommands {
         }
     }
 
-    async #generateTimeoutToken(name) {
+    async #generateTimeoutToken(name, expire) {
         const jwt = await new SignJWT({name})
                     .setProtectedHeader({ alg: 'HS256' })
                     .setIssuer('rotmg indo')
-                    .setExpirationTime('30d')
+                    .setExpirationTime(expire)
                     .sign(this.#timeoutSecret)
         return jwt
     }
@@ -123,13 +123,13 @@ class FanartCommands {
                 // get author list
                 const authorUsernameList = fetchAuthorList.content.split(',')
 
-                // ### COMMAND UNTUK MEMATIKAN FITUR
-                // return await this.interact.editReply({ content: `tidak boleh ngabisin limit orang lain :juri:` })
-
                 // check fanart counter before get fanart
                 this.#twitterClientData = await this.#checkFanartApiCounter()
                 const currentTokenCounterText = `${this.#twitterClientData.name}: ${100-this.#twitterClientData.counter} left`
-                // console.log(this.#twitterClientData);
+
+                // // ### COMMAND UNTUK MEMATIKAN FITUR
+                // return await this.interact.editReply({ content: `tidak boleh ngabisin limit orang lain :juri:` })
+                
                 // both token are on limit, cannot get fanart
                 if(!this.#twitterClientData) return await this.interact.editReply({ content: `elon pepek pelit` })
                 // initialize twitter client
@@ -201,12 +201,11 @@ class FanartCommands {
         // there is no new fanart
         let fanartContent = `there is no new fanart 😭 (${authorUsername})`
         if(filteredAuthorTimeline.length === 0) {
-            await fanartChannel.send({ content: `${fanartContent}` })
-            // manual twitter api counter
-            getTwitterClientData[findTwitterClientData].counter += 5
             // update fanart counter to redis
+            getTwitterClientData[findTwitterClientData].counter += 5
             await this.redisClient.set('rotmgIndoFanartCounter', getTwitterClientData)
-            return
+            // send info
+            return await fanartChannel.send({ content: `${fanartContent}` })
         }
         // get posted fanart list
         const getPostedFanarts = await this.redisClient.get('rotmgIndoFanart')
