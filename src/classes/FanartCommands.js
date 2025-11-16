@@ -201,29 +201,29 @@ class FanartCommands {
         // there is no new fanart
         let fanartContent = `there is no new fanart 😭 (${authorUsername})`
         if(filteredAuthorTimeline.length === 0) {
-            // update fanart counter to redis
-            getTwitterClientData[findTwitterClientData].counter += 5
-            await this.redisClient.set('rotmgIndoFanartCounter', getTwitterClientData)
             // send info
-            return await fanartChannel.send({ content: `${fanartContent}` })
+            await fanartChannel.send({ content: `${fanartContent}` })
         }
-        // get posted fanart list
-        const getPostedFanarts = await this.redisClient.get('rotmgIndoFanart')
-        console.log('posting fanart');
-        // check if fanart was posted
-        const isFanartPosted = getPostedFanarts 
-                            ? getPostedFanarts.indexOf(filteredAuthorTimeline[0].id) 
-                            : [].indexOf(filteredAuthorTimeline[0].id)
-        if(isFanartPosted !== -1) {
-            fanartContent = `fanart already posted (${author.data.username}) 💀`
-            return await fanartChannel.send({ content: fanartContent })
+        // there is fanart
+        else {
+            // get posted fanart list
+            const getPostedFanarts = await this.redisClient.get('rotmgIndoFanart')
+            console.log('posting fanart');
+            // check if fanart was posted
+            const isFanartPosted = getPostedFanarts 
+                                ? getPostedFanarts.indexOf(filteredAuthorTimeline[0].id) 
+                                : [].indexOf(filteredAuthorTimeline[0].id)
+            if(isFanartPosted !== -1) {
+                fanartContent = `fanart already posted (${author.data.username}) 💀`
+                return await fanartChannel.send({ content: fanartContent })
+            }
+            // there is fanart, set fanart link
+            fanartContent = `https://fixvx.com/${author.data.username}/status/${filteredAuthorTimeline[0].id}`
+            // send fanart to discord
+            await fanartChannel.send({ content: fanartContent })
+            // save tweet id to redis
+            await this.redisClient.set('rotmgIndoFanart', [...getPostedFanarts, `${filteredAuthorTimeline[0].id}`])
         }
-        // there is fanart, set fanart link
-        fanartContent = `https://fixvx.com/${author.data.username}/status/${filteredAuthorTimeline[0].id}`
-        // send fanart to discord
-        await fanartChannel.send({ content: fanartContent })
-        // save tweet id to redis
-        await this.redisClient.set('rotmgIndoFanart', [...getPostedFanarts, `${filteredAuthorTimeline[0].id}`])
         // manual twitter api counter
         getTwitterClientData[findTwitterClientData].counter += 5
         // update fanart counter to redis
