@@ -123,6 +123,9 @@ class FanartCommands {
                 // get author list
                 const authorUsernameList = fetchAuthorList.content.split(',')
 
+                // // ### COMMAND UNTUK RESET FANART COUNTER
+                // await this.redisClient.del('rotmgIndoFanartCounter')
+                
                 // check fanart counter before get fanart
                 this.#twitterClientData = await this.#checkFanartApiCounter()
                 const currentTokenCounterText = `${this.#twitterClientData.name}: ${100-this.#twitterClientData.counter} left`
@@ -149,6 +152,15 @@ class FanartCommands {
                     if(authorUsernameList.length === 0) {
                         clearInterval(fanartPosting)
                         await fanartChannel.send({ content: 'no more fanart today 😭' })
+
+                        // manual twitter api counter
+                        const getTwitterClientData = await this.redisClient.get('rotmgIndoFanartCounter')
+                        const findTwitterClientData = getTwitterClientData.map(v => v.name)
+                                                    .indexOf(this.#twitterClientData.name)
+                        getTwitterClientData[findTwitterClientData].counter += 10
+                        // update fanart counter to redis
+                        await this.redisClient.set('rotmgIndoFanartCounter', getTwitterClientData)
+                        // stop fanart command
                         return resolve('fanart done')
                     }
                 }, fanartInterval);
@@ -182,8 +194,6 @@ class FanartCommands {
     async #postFanart(fanartChannel, authorUsername, tweetAmount) {
         console.log('getting author', authorUsername);
         
-        const getTwitterClientData = await this.redisClient.get('rotmgIndoFanartCounter')
-        const findTwitterClientData = getTwitterClientData.map(v => v.name).indexOf(this.#twitterClientData.name)
         // find author
         const author = await this.#twitterClient.v2.userByUsername(authorUsername)
         if(!author.data) return await fanartChannel.send({ content: `author ${authorUsername} not found` })
@@ -224,10 +234,6 @@ class FanartCommands {
             // save tweet id to redis
             await this.redisClient.set('rotmgIndoFanart', [...getPostedFanarts, `${filteredAuthorTimeline[0].id}`])
         }
-        // manual twitter api counter
-        getTwitterClientData[findTwitterClientData].counter += 5
-        // update fanart counter to redis
-        await this.redisClient.set('rotmgIndoFanartCounter', getTwitterClientData)
     }
 }
 
