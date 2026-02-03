@@ -352,10 +352,10 @@ class PlayerCommands {
             // alarm on
             if(inputStatus == 'on') {
                 // get player graveyard
-                const scrape = require('graveyard-scrape').scrapeGraveyard
+                const graveyardUrl = `https://www.realmeye.com/graveyard-of-player/${inputUsername}`
+                const graveyards = await fetchGraveyards(graveyardUrl, null)
                 // is graveyard public
-                const isGraveyardPublic = await scrape(inputUsername, 1)
-                if(isGraveyardPublic.length === 0 || new Date(isGraveyardPublic[0].death_date).toString() == 'Invalid Date') {
+                if(graveyards.length === 0 || new Date(graveyards[0].death_date).toString() == 'Invalid Date') {
                     return await this.interact.editReply({ content: `${inputUsername} graveyard is private :skull:`, ephemeral: true })
                 }
                 // update player query

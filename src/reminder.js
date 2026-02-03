@@ -34,11 +34,11 @@ async function greetingsReminder(bot) {
             { name: 'pagi', emoji: ':expressionless:' },
             { name: 'pingsan', emoji: ':sleeping:' }
         ]
-        let [remindYear, remindMonth] = [new Date().getFullYear(), new Date().getMonth()+1]
-        const reminderEndpoint = `https://api.aladhan.com/v1/calendarByCity/${remindYear}/${remindMonth}?city=Jakarta&country=Indonesia`
-        const fetchOptions = { method: 'GET' }
         // get reminder schedules
-        const reminderResult = await fetcherReminder(reminderEndpoint, fetchOptions)
+        const reminderResult = {
+            names: ['subuh', 'siang', 'sore', 'magrib', 'isya', 'pagi', 'pingsan'],
+            schedules: ['05:00', '12:00', '15:00', '18:00', '19:10', '07:00', '22:00'],
+        }
         // send message ONCE PER DAY based on scheduled time
         let interval = 3_600_000 // 25mins = 1_500_000, 30mins = 1_800_000, 60mins = 3_600_000
         let startInterval = setInterval(() => { reminderInterval() }, interval);
@@ -78,8 +78,6 @@ async function greetingsReminder(bot) {
                     if(currentHours === 7) await regCommands()
                     // reset reminder time
                     if(currentHours === 22) {
-                        // reminder reset
-                        [remindYear, remindMonth] = [new Date().getFullYear(), new Date().getMonth()]
                         // help reminder reset between 7:00 ~ 21:00
                         helpTime = [helpTimeRoll(1), helpTimeRoll(12)]
                         // death reminder on selamat pingsan

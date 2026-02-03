@@ -137,8 +137,16 @@ class FanartCommands {
                 if(!this.#twitterClientData) return await this.interact.editReply({ content: `elon pepek pelit` })
                 // initialize twitter client
                 this.#twitterClient = new TwitterApi(this.#twitterClientData.fanart_token)
-                
-                // set first fanart
+
+                // manual twitter api counter
+                const getTwitterClientData = await this.redisClient.get('rotmgIndoFanartCounter')
+                const findTwitterClientData = getTwitterClientData.map(v => v.name)
+                                            .indexOf(this.#twitterClientData.name)
+                getTwitterClientData[findTwitterClientData].counter += 10
+                // update fanart counter to redis
+                await this.redisClient.set('rotmgIndoFanartCounter', getTwitterClientData)
+
+                // post first fanart
                 await this.#postFanart(fanartChannel, authorUsernameList[0], tweetAmount)   
                 // remove author after post the fanart
                 authorUsernameList.shift() 
@@ -152,14 +160,6 @@ class FanartCommands {
                     if(authorUsernameList.length === 0) {
                         clearInterval(fanartPosting)
                         await fanartChannel.send({ content: 'no more fanart today 😭' })
-
-                        // manual twitter api counter
-                        const getTwitterClientData = await this.redisClient.get('rotmgIndoFanartCounter')
-                        const findTwitterClientData = getTwitterClientData.map(v => v.name)
-                                                    .indexOf(this.#twitterClientData.name)
-                        getTwitterClientData[findTwitterClientData].counter += 10
-                        // update fanart counter to redis
-                        await this.redisClient.set('rotmgIndoFanartCounter', getTwitterClientData)
                         // stop fanart command
                         return resolve('fanart done')
                     }
