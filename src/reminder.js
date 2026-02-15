@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require("discord.js");
 const { queryBuilder, selectOne, selectAll } = require("../database/databaseQueries");
 const { indonesiaDate, convertTime12to24 } = require("../helper/dateTime");
-const { fetcherReminder, fetcherWebhook, fetchGraveyards } = require("../helper/fetcher");
+const { fetcherWebhook, fetchGraveyards } = require("../helper/fetcher");
 const regCommands = require('./register-commands')
 
 async function greetingsReminder(bot) {
@@ -14,8 +14,8 @@ async function greetingsReminder(bot) {
             // prevent help time same as default reminder
             switch(time) {
                 // -1 from schedule time to prevent the 14min loop
-                // 7, 12, 15, 18, 19, 22
-                case 6: case 11: case 14: case 17: case 18: case 21: 
+                // 5, 7, 12, 15, 18, 19, 22
+                case 4: case 6: case 11: case 14: case 17: case 18: case 21: 
                     return time + 1
                 default: 
                     return time

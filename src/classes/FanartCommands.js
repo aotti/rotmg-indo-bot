@@ -175,7 +175,7 @@ class FanartCommands {
                 // free tier usage cap exceed
                 if(error.data?.title.match(/usagecap/i)) 
                     await this.interact.editReply({ content: `elon pepek pelit` })
-                else if(error.data.title.match(/too many requests/i))
+                else if(error.data?.title.match(/too many requests/i))
                     await this.interact.editReply({ content: `try again later` })
                 await fetcherWebhook(this.interact.commandName, error)
             }
