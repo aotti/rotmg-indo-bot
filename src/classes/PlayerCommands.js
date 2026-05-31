@@ -26,8 +26,9 @@ class PlayerCommands {
                 }
                 // check start + end gap
                 const startEndGap = inputs.end - inputs.start
-                if(startEndGap > 20) {
-                    return await this.interact.editReply({ content: `maksimal 20 data (si donggo ${startEndGap})`, flags: MessageFlags.Ephemeral })
+                const maxGapData = 40
+                if(startEndGap > maxGapData) {
+                    return await this.interact.editReply({ content: `maksimal ${maxGapData} data (si donggo ${startEndGap})`, flags: MessageFlags.Ephemeral })
                 }
                 // get all player data
                 const query = queryBuilder('players', 1)
@@ -41,12 +42,23 @@ class PlayerCommands {
                 const playerUpdateListText = () => {
                     // only modify if update player > 10
                     if(playerUpdateList.length > 10) {
-                        const [puList_1, puList_2] = [playerUpdateList.slice(0, 10), playerUpdateList.slice(10)]
+                        const [puList_1, puList_2, puList_3, puList_4] = [
+                            playerUpdateList.slice(0, 10), 
+                            playerUpdateList.slice(10, 20), 
+                            playerUpdateList.slice(20, 30), 
+                            playerUpdateList.slice(30)
+                        ]
                         const tempPlayerUpdateList = []
                         for(let i=0; i<10; i++) {
-                            puList_2[i] 
-                                ? tempPlayerUpdateList.push(`${puList_1[i]}..........${puList_2[i]}`)
-                                : tempPlayerUpdateList.push(`${puList_1[i]}..........`)
+                            if(puList_4[i]) {
+                                tempPlayerUpdateList.push(`${puList_1[i]} ． ． ． ${puList_2[i]} ． ． ． ${puList_3[i]} ． ． ． ${puList_4[i]}`)
+                            } else if(puList_3[i]) {
+                                tempPlayerUpdateList.push(`${puList_1[i]} ． ． ． ${puList_2[i]} ． ． ． ${puList_3[i]}}`)
+                            } else if(puList_2[i]) {
+                                tempPlayerUpdateList.push(`${puList_1[i]} ． ． ． ${puList_2[i]}`)
+                            } else {
+                                tempPlayerUpdateList.push(`${puList_1[i]} ． ． ． `)
+                            }
                         } 
                         return tempPlayerUpdateList.join('\n')
                     }
